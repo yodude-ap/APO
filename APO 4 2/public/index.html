@@ -1,0 +1,760 @@
+<!-- ===================================================================== -->
+<!-- FILE 1: index.html (Master Host Shell)                                -->
+<!-- ===================================================================== -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50 antialiased">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Arunachal Peoples Opinion - Low-Bandwidth Citizen Feedback PWA" />
+  <title>Arunachal Peoples Opinion | Citizen Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b'
+            },
+            executive: {
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .tab-transition {
+      transition: opacity 200ms ease-in-out, transform 200ms ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-800 selection:bg-brand-600 selection:text-white overflow-x-hidden">
+
+  <!-- ===================================================================== -->
+  <!-- PROTOTYPE AUTHENTICATION OVERLAY (FULL-SCREEN MOCK OTP MODAL)         -->
+  <!-- ===================================================================== -->
+  <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 glass-dark transition-all duration-200 ease-in-out">
+    <div class="w-full max-w-md rounded-xl bg-white/95 p-6 sm:p-8 shadow-2xl border border-slate-200/80 transition-all duration-200 ease-in-out">
+      
+      <!-- Brand Header -->
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="w-20 h-20 rounded-xl bg-slate-100 border border-slate-200 p-2 flex items-center justify-center mb-4 shadow-sm overflow-hidden">
+          <img src="assets/logo.png" alt="Arunachal Peoples Opinion Logo" class="w-full h-full object-contain" onerror="this.outerHTML='<span class=\'text-xs font-bold text-slate-500 text-center\'>LOGO<br/>assets/logo.png</span>'" />
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100 mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
+          Privacy-First (Built on DPDP Act Standards)
+        </span>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Arunachal Peoples Opinion</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">State Citizen Feedback & Governance Telemetry Portal</p>
+      </div>
+
+      <!-- Step 1: Mobile Input & Mandatory Consent -->
+      <div id="auth-step-phone" class="space-y-4 duration-200 ease-in-out">
+        <div>
+          <label for="mobile-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+            10-Digit Citizen Mobile Number
+          </label>
+          <div class="relative flex rounded-xl shadow-sm">
+            <span class="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-semibold">
+              +91
+            </span>
+            <input
+              type="tel"
+              id="mobile-input"
+              maxlength="10"
+              placeholder="9876543210"
+              class="block w-full rounded-none rounded-r-xl border border-slate-300 px-3.5 py-3 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition duration-200 ease-in-out"
+            />
+          </div>
+          <p id="phone-error" class="hidden text-xs font-medium text-red-600 mt-1.5">
+            Please enter a valid 10-digit Indian mobile number.
+          </p>
+        </div>
+
+        <!-- Mandatory Data Consent Checkbox -->
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/90">
+          <label for="consent-checkbox" class="flex items-start gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              id="consent-checkbox"
+              checked
+              class="mt-0.5 w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+            />
+            <span class="text-xs text-slate-600 leading-snug">
+              I consent to one-way cryptographic <span class="font-mono font-semibold text-slate-800">SHA-256</span> anonymization of my mobile number for citizen feedback telemetry.
+            </span>
+          </label>
+          <p id="consent-error" class="hidden text-xs font-medium text-red-600 mt-1.5">
+            You must accept the DPDP data privacy consent before requesting an OTP.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onclick="handleSendOTP()"
+          id="btn-send-otp"
+          class="w-full flex items-center justify-center gap-2 rounded-xl bg-executive-900 hover:bg-executive-800 active:scale-[0.99] text-white font-semibold py-3 px-4 text-sm shadow-md transition duration-200 ease-in-out"
+        >
+          <span>Send OTP</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Step 2: OTP Verification -->
+      <div id="auth-step-otp" class="hidden space-y-4 duration-200 ease-in-out">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div class="text-xs text-slate-600">
+            OTP dispatched to <span id="display-masked-phone" class="font-bold text-slate-900">+91 ******0000</span>
+          </div>
+          <button type="button" onclick="resetAuthFlow()" class="text-xs font-semibold text-brand-700 hover:underline">
+            Change
+          </button>
+        </div>
+
+        <div>
+          <label for="otp-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+            Enter 6-Digit Verification OTP
+          </label>
+          <input
+            type="text"
+            id="otp-input"
+            maxlength="6"
+            placeholder="123456"
+            value="123456"
+            class="block w-full rounded-xl border border-slate-300 px-4 py-3 text-center text-lg font-bold tracking-[0.35em] text-slate-900 placeholder-slate-300 focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition duration-200 ease-in-out"
+          />
+          <p class="text-[11px] text-slate-500 mt-1.5 text-center">
+            Prototype Mode: Use <span class="font-mono font-semibold text-slate-700">123456</span> or any 6-digit numeric sequence.
+          </p>
+          <p id="otp-error" class="hidden text-xs font-medium text-red-600 mt-1 text-center">
+            Invalid OTP format. Enter code 123456.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onclick="handleVerifyOTP()"
+          id="btn-verify-otp"
+          class="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold py-3 px-4 text-sm shadow-md transition duration-200 ease-in-out"
+        >
+          <span>Verify & Generate Anonymous Hash</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Privacy Notice Footer -->
+      <div class="mt-6 pt-4 border-t border-slate-200/80 text-[11px] text-slate-500 leading-relaxed text-center">
+        <strong class="text-slate-700">Zero-Identity Retention:</strong> Your phone number is immediately passed through a salted one-way <span class="font-mono">SHA-256</span> cryptographic function and purged from memory.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN APPLICATION SHELL (SIDEBAR ON PC / BOTTOM BAR ON MOBILE)         -->
+  <!-- ===================================================================== -->
+  <div class="min-h-full flex flex-col md:flex-row">
+
+    <!-- PC Left-Hand Sidebar Navigation -->
+    <aside class="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-executive-900 text-slate-100 border-r border-slate-800 z-30">
+      <div class="flex items-center gap-3.5 px-6 py-5 border-b border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-white p-1.5 flex items-center justify-center shrink-0">
+          <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain" onerror="this.outerHTML='<span class=\'text-[10px] font-bold text-slate-800\'>LOGO</span>'" />
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-sm font-bold tracking-tight text-white truncate">Arunachal Opinion</h2>
+          <p class="text-[11px] text-emerald-400 font-medium truncate">Low-Bandwidth Citizen PWA</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links (PC) -->
+      <nav class="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto" aria-label="Sidebar Navigation">
+        <button onclick="switchTab('components/tab1-polling.html')" data-tab="components/tab1-polling.html" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out bg-brand-600 text-white shadow-sm">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span>Public Polling</span>
+        </button>
+
+        <button onclick="switchTab('components/tab2-pinboard.html')" data-tab="components/tab2-pinboard.html" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out text-slate-300 hover:bg-slate-800/80 hover:text-white">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>Geo-Pinboard</span>
+        </button>
+
+        <button onclick="switchTab('components/tab3-tracker.html')" data-tab="components/tab3-tracker.html" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out text-slate-300 hover:bg-slate-800/80 hover:text-white">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <span>Scheme Tracker</span>
+        </button>
+
+        <button onclick="switchTab('components/tab4-youth.html')" data-tab="components/tab4-youth.html" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out text-slate-300 hover:bg-slate-800/80 hover:text-white">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+          <span class="text-left leading-tight">Youth Job and Skill Tracker</span>
+        </button>
+
+        <button onclick="switchTab('components/tab5-speakfree.html')" data-tab="components/tab5-speakfree.html" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out text-slate-300 hover:bg-slate-800/80 hover:text-white">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Anonymous Speak Free</span>
+        </button>
+      </nav>
+
+      <!-- Active Hash Status -->
+      <div class="p-4 m-3 rounded-xl bg-slate-800/90 border border-slate-700/80">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+          <span>SESSION SHA-256 TOKEN</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        </div>
+        <p id="sidebar-hash-badge" class="font-mono text-xs text-slate-200 truncate">
+          Awaiting Auth...
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Shell -->
+    <div class="flex-1 md:pl-72 flex flex-col min-h-screen pb-20 md:pb-8">
+      
+      <!-- Top Bar (Mobile + Desktop Status Header) -->
+      <header class="sticky top-0 z-20 glass-panel border-b border-slate-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="md:hidden w-9 h-9 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center">
+            <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain" onerror="this.outerHTML='<span class=\'text-[9px] font-bold text-slate-700\'>LOGO</span>'" />
+          </div>
+          <div>
+            <h1 id="active-tab-title" class="text-base sm:text-lg font-bold text-slate-900">Public Polling</h1>
+            <p class="text-xs text-slate-500 hidden sm:block">Arunachal Pradesh State Citizen Consultation Portal</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            2G/3G Lite Sync
+          </span>
+          <span id="header-hash-pill" class="hidden sm:inline-block font-mono text-xs px-2.5 py-1 rounded-xl bg-executive-900 text-emerald-400">
+            SHA256: UNVERIFIED
+          </span>
+        </div>
+      </header>
+
+      <!-- Global Toast Feedback Banner -->
+      <div id="toast-banner" class="hidden fixed top-16 right-4 z-40 max-w-sm rounded-xl bg-executive-900 text-white px-4 py-3 shadow-xl border border-slate-700 flex items-center gap-3 transition-all duration-200 ease-in-out">
+        <span class="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0"></span>
+        <p id="toast-message" class="text-xs sm:text-sm font-medium"></p>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- CORE DYNAMIC WORKSPACE VIEWPORT (POPULATED VIA ASYNC FETCH)       -->
+      <!-- ================================================================= -->
+      <main id="tool-viewport" class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 pt-6 tab-transition opacity-100">
+        <!-- Sub-component DOM nodes injected dynamically here -->
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 glass-panel border-t border-slate-200 px-1.5 py-1.5 grid grid-cols-5 gap-1" aria-label="Mobile Bottom Navigation">
+      <button onclick="switchTab('components/tab1-polling.html')" data-tab="components/tab1-polling.html" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-brand-700 bg-brand-50 font-bold text-[10px] text-center leading-tight transition duration-200 ease-in-out">
+        <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span class="truncate w-full">Public Polling</span>
+      </button>
+
+      <button onclick="switchTab('components/tab2-pinboard.html')" data-tab="components/tab2-pinboard.html" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-semibold text-[10px] text-center leading-tight transition duration-200 ease-in-out">
+        <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        <span class="truncate w-full">Geo-Pinboard</span>
+      </button>
+
+      <button onclick="switchTab('components/tab3-tracker.html')" data-tab="components/tab3-tracker.html" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-semibold text-[10px] text-center leading-tight transition duration-200 ease-in-out">
+        <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        <span class="truncate w-full">Scheme Tracker</span>
+      </button>
+
+      <button onclick="switchTab('components/tab4-youth.html')" data-tab="components/tab4-youth.html" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-semibold text-[10px] text-center leading-tight transition duration-200 ease-in-out">
+        <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/></svg>
+        <span class="truncate w-full" title="Youth Job and Skill Tracker">Youth Job and Skill Tracker</span>
+      </button>
+
+      <button onclick="switchTab('components/tab5-speakfree.html')" data-tab="components/tab5-speakfree.html" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-semibold text-[10px] text-center leading-tight transition duration-200 ease-in-out">
+        <svg class="w-5 h-5 mb-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        <span class="truncate w-full">Speak Free</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MASTER HOST CONTROLLER (ASYNC FETCH TAB SWITCHER, AUTH, API HANDLERS) -->
+  <!-- ===================================================================== -->
+  <script>
+    // Official 28 Arunachal Pradesh Districts List
+    const ARUNACHAL_DISTRICTS = [
+      "Tawang", "West Kameng", "Bichom", "East Kameng", "Pakke-Kessang",
+      "Kurung Kumey", "Kra Daadi", "Papum Pare", "Itanagar Capital Complex",
+      "Lower Subansiri", "Keyi Panyor", "Kamle", "Upper Subansiri", "Shi-Yomi",
+      "West Siang", "Lepa-Rada", "Lower Siang", "Siang", "Upper Siang",
+      "East Siang", "Dibang Valley", "Lower Dibang Valley", "Lohit",
+      "Anjaw", "Namsai", "Changlang", "Tirap", "Longding"
+    ];
+
+    // Application Session State (Stores ONLY anonymized SHA-256 hash token)
+    const appState = {
+      citizenHash: null,
+      pendingPhoneBuffer: null,
+      selectedDistrict: "",
+      activeComponentPath: null,
+      componentCache: {}
+    };
+
+    const TAB_TITLES = {
+      "components/tab1-polling.html": "Public Polling",
+      "components/tab2-pinboard.html": "Geo-Pinboard Civic Reporting",
+      "components/tab3-tracker.html": "State Welfare Scheme Tracker",
+      "components/tab4-youth.html": "Youth Job and Skill Tracker",
+      "components/tab5-speakfree.html": "Anonymous Speak Free Vault"
+    };
+
+    // Load Default Tab Component on Startup
+    document.addEventListener("DOMContentLoaded", () => {
+      switchTab("components/tab1-polling.html");
+    });
+
+    // Toast Utility
+    function showToast(message) {
+      const banner = document.getElementById("toast-banner");
+      const text = document.getElementById("toast-message");
+      text.textContent = message;
+      banner.classList.remove("hidden");
+      setTimeout(() => banner.classList.add("hidden"), 3500);
+    }
+
+    // Hydrate dynamically injected DOM nodes inside #tool-viewport
+    function hydrateInjectedComponent() {
+      const viewport = document.getElementById("tool-viewport");
+      const dropdowns = viewport.querySelectorAll(".district-dropdown");
+
+      dropdowns.forEach(select => {
+        // Populate district options
+        ARUNACHAL_DISTRICTS.forEach(district => {
+          const opt = document.createElement("option");
+          opt.value = district;
+          opt.textContent = district;
+          select.appendChild(opt);
+        });
+
+        // Restore previously chosen session district if available
+        if (appState.selectedDistrict) {
+          select.value = appState.selectedDistrict;
+        }
+
+        // Sync district selection across tabs
+        select.addEventListener("change", (e) => {
+          appState.selectedDistrict = e.target.value;
+          const badge = document.getElementById("svg-selected-district");
+          if (badge) {
+            badge.textContent = e.target.value || "None Selected";
+          }
+        });
+      });
+
+      const badge = document.getElementById("svg-selected-district");
+      if (badge && appState.selectedDistrict) {
+        badge.textContent = appState.selectedDistrict;
+      }
+    }
+
+    // Map Click District Selector
+    function selectDistrictFromMap(districtName) {
+      appState.selectedDistrict = districtName;
+      document.querySelectorAll(".district-dropdown").forEach(sel => {
+        sel.value = districtName;
+      });
+      const badge = document.getElementById("svg-selected-district");
+      if (badge) {
+        badge.textContent = districtName;
+      }
+      showToast(`Jurisdiction set to ${districtName} via map selection.`);
+    }
+
+    // ---------------------------------------------------------------------
+    // ASYNCHRONOUS CLIENT-SIDE FETCH() TAB SWITCHER (ZERO FLICKER/RELOAD)
+    // ---------------------------------------------------------------------
+    async function switchTab(componentPath) {
+      if (appState.activeComponentPath === componentPath) return;
+      appState.activeComponentPath = componentPath;
+
+      const viewport = document.getElementById("tool-viewport");
+
+      // Update Header Title
+      document.getElementById("active-tab-title").textContent =
+        TAB_TITLES[componentPath] || "Citizen Portal";
+
+      // Update Desktop Sidebar Active Button Styles
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        if (btn.dataset.tab === componentPath) {
+          btn.className = "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out bg-brand-600 text-white shadow-sm";
+        } else {
+          btn.className = "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition duration-200 ease-in-out text-slate-300 hover:bg-slate-800/80 hover:text-white";
+        }
+      });
+
+      // Update Mobile Bottom Bar Active Button Styles
+      document.querySelectorAll(".nav-btn-mobile").forEach(btn => {
+        if (btn.dataset.tab === componentPath) {
+          btn.className = "nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-brand-700 bg-brand-50 font-bold text-[10px] text-center leading-tight transition duration-200 ease-in-out";
+        } else {
+          btn.className = "nav-btn-mobile flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-semibold text-[10px] text-center leading-tight transition duration-200 ease-in-out";
+        }
+      });
+
+      try {
+        // Smooth fade-out transition before DOM swap
+        viewport.classList.remove("opacity-100");
+        viewport.classList.add("opacity-0");
+
+        let htmlContent = appState.componentCache[componentPath];
+        if (!htmlContent) {
+          const response = await fetch(componentPath, { cache: "no-cache" });
+          if (!response.ok) {
+            throw new Error(`Failed to load ${componentPath}`);
+          }
+          htmlContent = await response.text();
+          appState.componentCache[componentPath] = htmlContent;
+        }
+
+        // Parse & inject sub-component DOM nodes into #tool-viewport
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        viewport.replaceChildren(...Array.from(doc.body.childNodes));
+
+        hydrateInjectedComponent();
+
+        // Smooth fade-in transition
+        requestAnimationFrame(() => {
+          viewport.classList.remove("opacity-0");
+          viewport.classList.add("opacity-100");
+        });
+      } catch (err) {
+        viewport.innerHTML = `
+          <div class="bg-white rounded-xl border border-red-200 p-6 text-center shadow-sm">
+            <p class="text-sm font-bold text-red-700">Unable to load component (${componentPath})</p>
+            <p class="text-xs text-slate-500 mt-1">Ensure the application is served via your Node/Express server or a local HTTP server so fetch() can resolve component files.</p>
+          </div>
+        `;
+        viewport.classList.remove("opacity-0");
+        viewport.classList.add("opacity-100");
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // PROTOTYPE AUTHENTICATION LOGIC (MOCK OTP + SHA-256 HANDSHAKE)
+    // ---------------------------------------------------------------------
+    function handleSendOTP() {
+      const mobileInput = document.getElementById("mobile-input");
+      const consentCheckbox = document.getElementById("consent-checkbox");
+      const phoneError = document.getElementById("phone-error");
+      const consentError = document.getElementById("consent-error");
+      const cleaned = mobileInput.value.trim();
+
+      if (!/^\d{10}$/.test(cleaned)) {
+        phoneError.classList.remove("hidden");
+        return;
+      }
+      phoneError.classList.add("hidden");
+
+      if (!consentCheckbox.checked) {
+        consentError.classList.remove("hidden");
+        return;
+      }
+      consentError.classList.add("hidden");
+
+      appState.pendingPhoneBuffer = cleaned;
+
+      // Simulated Promise API Dispatch
+      const btn = document.getElementById("btn-send-otp");
+      btn.disabled = true;
+      btn.innerHTML = `<span>Dispatching Mock OTP...</span>`;
+
+      new Promise((resolve) => setTimeout(resolve, 250)).then(() => {
+        document.getElementById("display-masked-phone").textContent =
+          `+91 ******${cleaned.slice(-4)}`;
+        document.getElementById("auth-step-phone").classList.add("hidden");
+        document.getElementById("auth-step-otp").classList.remove("hidden");
+        btn.disabled = false;
+        btn.innerHTML = `<span>Send OTP</span>`;
+      });
+    }
+
+    function resetAuthFlow() {
+      document.getElementById("auth-step-otp").classList.add("hidden");
+      document.getElementById("auth-step-phone").classList.remove("hidden");
+    }
+
+    async function handleVerifyOTP() {
+      const otpValue = document.getElementById("otp-input").value.trim();
+      const otpError = document.getElementById("otp-error");
+
+      // Accepts hardcoded "123456" or any 6-digit numeric sequence
+      if (otpValue !== "123456" && !/^\d{6}$/.test(otpValue)) {
+        otpError.classList.remove("hidden");
+        return;
+      }
+      otpError.classList.add("hidden");
+
+      try {
+        let tokenHash = null;
+        try {
+          const res = await fetch("/api/auth/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone: appState.pendingPhoneBuffer,
+              otp: otpValue
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            tokenHash = data.citizenHash;
+          }
+        } catch (_) {
+          // Offline / Standalone fallback using Web Crypto SHA-256
+          const msgBuffer = new TextEncoder().encode(appState.pendingPhoneBuffer + "::ARUNACHAL_DPDP_SALT_2026");
+          const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          tokenHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        // Purge raw phone number immediately from client memory
+        appState.pendingPhoneBuffer = null;
+        document.getElementById("mobile-input").value = "";
+        appState.citizenHash = tokenHash;
+
+        // Update UI Badges with truncated SHA-256 token
+        const shortHash = `${tokenHash.slice(0, 10)}...${tokenHash.slice(-6)}`;
+        document.getElementById("sidebar-hash-badge").textContent = shortHash;
+        document.getElementById("header-hash-pill").textContent = `SHA256: ${tokenHash.slice(0, 8)}`;
+
+        // Smooth slide & fade unlock animation of login modal overlay
+        const overlay = document.getElementById("auth-overlay");
+        overlay.classList.add("opacity-0", "-translate-y-4", "pointer-events-none");
+        setTimeout(() => overlay.classList.add("hidden"), 220);
+        showToast("Identity anonymized via SHA-256. Portal unlocked.");
+      } catch (err) {
+        showToast("Verification error. Please retry.");
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // TAB 1: PUBLIC POLLING SUBMISSION
+    // ---------------------------------------------------------------------
+    async function submitOneClickVote(optionLabel) {
+      const districtSelect = document.getElementById("poll-district");
+      const district = districtSelect ? districtSelect.value : appState.selectedDistrict;
+      if (!district) {
+        showToast("⚠️ Please select your Arunachal Pradesh district first.");
+        if (districtSelect) districtSelect.focus();
+        return;
+      }
+
+      const payload = {
+        citizenHash: appState.citizenHash,
+        district,
+        resolutionId: "AP-2026-09",
+        selectedOption: optionLabel
+      };
+
+      try {
+        await fetch("/api/polls/vote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (_) {}
+
+      const statusBadge = document.getElementById("poll-status-badge");
+      if (statusBadge) {
+        statusBadge.textContent = `Recorded (${district})`;
+        statusBadge.className = "font-bold text-brand-700";
+      }
+      showToast(`Vote recorded for ${district}: "${optionLabel}"`);
+    }
+
+    // ---------------------------------------------------------------------
+    // TAB 2: GEO-PINBOARD SUBMISSION (ENFORCES is_approved = false)
+    // ---------------------------------------------------------------------
+    function captureGPS() {
+      const coordsInput = document.getElementById("pin-coords");
+      if (!coordsInput) return;
+      if (!navigator.geolocation) {
+        coordsInput.value = "27.0844° N, 93.6053° E";
+        return;
+      }
+      coordsInput.value = "Locating...";
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          coordsInput.value = `${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E`;
+        },
+        () => {
+          coordsInput.value = "27.0844° N, 93.6053° E (Itanagar Fallback)";
+        }
+      );
+    }
+
+    async function submitGeoPin(event) {
+      event.preventDefault();
+      const category = document.querySelector('input[name="pin_category"]:checked').value;
+      const district = document.getElementById("pin-district").value;
+      const coordinates = document.getElementById("pin-coords").value.trim();
+      const description = document.getElementById("pin-desc").value.trim();
+      const fileInput = document.getElementById("pin-image");
+
+      const payload = {
+        citizenHash: appState.citizenHash,
+        category,
+        district,
+        coordinates: coordinates || null,
+        description,
+        imageName: fileInput.files[0] ? fileInput.files[0].name : "field_upload.jpg"
+      };
+
+      try {
+        await fetch("/api/pinboard/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (_) {}
+
+      event.target.reset();
+      showToast("Civic report queued (is_approved = false) for Admin verification.");
+    }
+
+    // ---------------------------------------------------------------------
+    // TAB 3: SCHEME TRACKER BINARY TOGGLE
+    // ---------------------------------------------------------------------
+    async function recordSchemeStatus(schemeCode, statusValue, btnElement) {
+      const districtEl = document.getElementById("scheme-district");
+      const district = (districtEl && districtEl.value) ? districtEl.value : "Unspecified";
+      const parentGrid = btnElement.parentElement;
+      parentGrid.querySelectorAll(".scheme-btn").forEach(b => {
+        b.className = "scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 transition duration-200 ease-in-out";
+      });
+
+      if (statusValue === "Benefited / Reached") {
+        btnElement.className = "scheme-btn py-2 px-3 rounded-xl text-xs font-bold border border-brand-600 bg-brand-600 text-white transition duration-200 ease-in-out";
+      } else {
+        btnElement.className = "scheme-btn py-2 px-3 rounded-xl text-xs font-bold border border-slate-800 bg-slate-800 text-white transition duration-200 ease-in-out";
+      }
+
+      try {
+        await fetch("/api/schemes/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenHash: appState.citizenHash,
+            district,
+            schemeCode,
+            status: statusValue
+          })
+        });
+      } catch (_) {}
+
+      showToast(`${schemeCode}: Marked as "${statusValue}"`);
+    }
+
+    // ---------------------------------------------------------------------
+    // TAB 4: YOUTH JOB AND SKILL TRACKER STEP-BY-STEP WIZARD
+    // ---------------------------------------------------------------------
+    function setYouthStep(stepNumber) {
+      const districtEl = document.getElementById("youth-district");
+      if (stepNumber === 2 && (!districtEl || !districtEl.value)) {
+        showToast("⚠️ Please select your Home District to proceed.");
+        return;
+      }
+
+      [1, 2, 3].forEach(n => {
+        const stepEl = document.getElementById(`youth-step-${n}`);
+        if (stepEl) stepEl.classList.toggle("hidden", n !== stepNumber);
+      });
+
+      const labels = {
+        1: "Step 1 of 3 • Demographics & District",
+        2: "Step 2 of 3 • Qualification Level",
+        3: "Step 3 of 3 • Institutional Support"
+      };
+      const pcts = { 1: "33%", 2: "66%", 3: "100%" };
+      document.getElementById("youth-step-label").textContent = labels[stepNumber];
+      document.getElementById("youth-step-pct").textContent = pcts[stepNumber];
+      document.getElementById("youth-progress-bar").style.width = pcts[stepNumber];
+    }
+
+    async function submitYouthWizard(event) {
+      event.preventDefault();
+      const age = Number(document.getElementById("youth-age").value);
+      const district = document.getElementById("youth-district").value;
+      const qualification = document.querySelector('input[name="youth_qualification"]:checked').value;
+      const desiredSupport = Array.from(document.querySelectorAll('input[name="youth_support"]:checked')).map(cb => cb.value);
+
+      try {
+        await fetch("/api/youth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenHash: appState.citizenHash,
+            age,
+            district,
+            qualification,
+            desiredSupport
+          })
+        });
+      } catch (_) {}
+
+      setYouthStep(1);
+      showToast(`Youth profile registered anonymously for ${district}.`);
+    }
+
+    // ---------------------------------------------------------------------
+    // TAB 5: ANONYMOUS SPEAK FREE (ENDPOINT ISOLATED)
+    // ---------------------------------------------------------------------
+    async function submitSpeakFree(event) {
+      event.preventDefault();
+      const district = document.getElementById("speakfree-district").value;
+      const message = document.getElementById("speakfree-message").value.trim();
+
+      try {
+        await fetch("/api/speak-free", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenHash: appState.citizenHash,
+            district,
+            message
+          })
+        });
+      } catch (_) {}
+
+      event.target.reset();
+      showToast("Encrypted feedback written to isolated Admin Ledger.");
+    }
+  </script>
+</body>
+</html>

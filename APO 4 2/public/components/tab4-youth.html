@@ -1,0 +1,130 @@
+<!-- ===================================================================== -->
+<!-- FILE 5: components/tab4-youth.html                                    -->
+<!-- ===================================================================== -->
+<section id="tab-youth" class="tab-panel tab-transition space-y-6">
+  <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-7 shadow-sm max-w-3xl mx-auto">
+    
+    <!-- Component Display Header -->
+    <div class="pb-4 mb-6 border-b border-slate-200">
+      <h2 class="text-base sm:text-lg font-bold text-slate-900">Youth Job and Skill Tracker</h2>
+      <p class="text-xs text-slate-500">Step-by-step registration for employment readiness, skill training, and entrepreneurship support.</p>
+    </div>
+
+    <!-- Wizard Progress Header -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+        <span id="youth-step-label">Step 1 of 3 • Demographics & District</span>
+        <span id="youth-step-pct" class="text-brand-700">33%</span>
+      </div>
+      <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+        <div id="youth-progress-bar" class="h-full bg-brand-600 transition-all duration-200 ease-in-out" style="width: 33.33%"></div>
+      </div>
+    </div>
+
+    <form id="youth-wizard-form" onsubmit="submitYouthWizard(event)">
+      <!-- Wizard Step 1: Age & District -->
+      <div id="youth-step-1" class="space-y-4 duration-200 ease-in-out">
+        <h3 class="text-base font-bold text-slate-900">Youth Demographic Verification</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="youth-age" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Your Age (15 – 35 Years) *
+            </label>
+            <input
+              type="number"
+              id="youth-age"
+              min="15"
+              max="35"
+              value="23"
+              required
+              class="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:border-brand-600 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label for="youth-district" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Home District *
+            </label>
+            <select id="youth-district" required class="district-dropdown block w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:border-brand-600 focus:outline-none">
+              <option value="">-- Select District --</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-4 flex justify-end">
+          <button type="button" onclick="setYouthStep(2)" class="rounded-xl bg-executive-900 hover:bg-executive-800 text-white font-semibold px-5 py-2.5 text-sm transition duration-200 ease-in-out">
+            Next: Qualification →
+          </button>
+        </div>
+      </div>
+
+      <!-- Wizard Step 2: Qualification Levels -->
+      <div id="youth-step-2" class="hidden space-y-4 duration-200 ease-in-out">
+        <h3 class="text-base font-bold text-slate-900">Highest Academic / Technical Qualification</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="cursor-pointer">
+            <input type="radio" name="youth_qualification" value="Class X / XII (Higher Secondary)" checked class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-900">
+              Class X / XII (Higher Secondary)
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="youth_qualification" value="ITI / Polytechnic Diploma" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-900">
+              ITI / Polytechnic Diploma
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="youth_qualification" value="Undergraduate Degree (BA/BSc/BCom/BTech)" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-900">
+              Undergraduate (BA/BSc/BCom/BTech)
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="youth_qualification" value="Postgraduate / Doctoral Research" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-900">
+              Postgraduate / Doctoral Research
+            </div>
+          </label>
+        </div>
+        <div class="pt-4 flex justify-between">
+          <button type="button" onclick="setYouthStep(1)" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+            ← Back
+          </button>
+          <button type="button" onclick="setYouthStep(3)" class="rounded-xl bg-executive-900 hover:bg-executive-800 text-white font-semibold px-5 py-2.5 text-sm">
+            Next: Support Priorities →
+          </button>
+        </div>
+      </div>
+
+      <!-- Wizard Step 3: Checkbox Grid of Desired Institutional Support -->
+      <div id="youth-step-3" class="hidden space-y-4 duration-200 ease-in-out">
+        <h3 class="text-base font-bold text-slate-900">Select Desired Institutional Support Programs</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" name="youth_support" value="Startup Grants" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+            <span class="text-sm font-semibold text-slate-800">Startup Grants & Seed Incubation</span>
+          </label>
+          <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" name="youth_support" value="Competitive Exam Coaching" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+            <span class="text-sm font-semibold text-slate-800">APPSC / UPSC Competitive Exam Coaching</span>
+          </label>
+          <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" name="youth_support" value="Vocational Training" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+            <span class="text-sm font-semibold text-slate-800">Vocational & Eco-Tourism Skill Training</span>
+          </label>
+          <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" name="youth_support" value="Agri-Processing Credit" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+            <span class="text-sm font-semibold text-slate-800">Modern Agri-Processing & Cold Chain Credit</span>
+          </label>
+        </div>
+        <div class="pt-4 flex justify-between">
+          <button type="button" onclick="setYouthStep(2)" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+            ← Back
+          </button>
+          <button type="submit" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 text-sm shadow-sm">
+            Complete Youth Registration
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

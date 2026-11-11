@@ -1,0 +1,53 @@
+<!-- ===================================================================== -->
+<!-- FILE 6: components/tab5-speakfree.html                                -->
+<!-- ===================================================================== -->
+<section id="tab-speakfree" class="tab-panel tab-transition space-y-6">
+  <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-7 shadow-sm max-w-3xl mx-auto">
+    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
+      <div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Anonymous Speak Free Vault</h2>
+        <p class="text-xs text-slate-500">Direct, unedited citizen transmission to the Executive Administration Ledger.</p>
+      </div>
+      <span class="px-3 py-1 rounded-xl text-xs font-bold bg-slate-900 text-emerald-400 font-mono">
+        WRITE-ONLY ISOLATED
+      </span>
+    </div>
+
+    <form id="speakfree-form" onsubmit="submitSpeakFree(event)" class="space-y-4">
+      <div>
+        <label for="speakfree-district" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+          Associated District (For Executive Trend Tagging) *
+        </label>
+        <select id="speakfree-district" required class="district-dropdown block w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold text-slate-900 focus:border-brand-600 focus:outline-none">
+          <option value="">-- Select District --</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="speakfree-message" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+          Private Citizen Feedback / Whistleblower Note *
+        </label>
+        <textarea
+          id="speakfree-message"
+          rows="6"
+          required
+          placeholder="Write your honest feedback regarding governance, departmental bottlenecks, or local welfare delivery. This submission is strictly isolated from all public endpoints..."
+          class="block w-full rounded-xl border border-slate-300 p-4 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition duration-200 ease-in-out"
+        ></textarea>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+        <strong>Endpoint Isolation Guarantee:</strong> Payloads transmitted here are ingested exclusively into the private administration ledger (<span class="font-mono">POST /api/speak-free</span>). Zero public GET routes or shared client states exist for this table.
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          class="rounded-xl bg-executive-900 hover:bg-executive-800 text-white font-semibold px-6 py-3 text-sm shadow-sm transition duration-200 ease-in-out"
+        >
+          Transmit to Private Ledger
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

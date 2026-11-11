@@ -1,0 +1,16 @@
+{
+  "name": "arunachal-peoples-opinion-pwa",
+  "version": "1.0.0",
+  "description": "Low-Bandwidth Citizen Feedback PWA for Arunachal Pradesh",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

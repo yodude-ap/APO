@@ -1,0 +1,123 @@
+<!-- ===================================================================== -->
+<!-- FILE 2: components/tab1-polling.html                                  -->
+<!-- ===================================================================== -->
+<section id="tab-polling" class="tab-panel tab-transition space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Left Column: District Selector & 1-Click Polling Card -->
+    <div class="lg:col-span-7 space-y-5">
+      <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-100">
+            Step 1 • Mandatory Jurisdiction
+          </span>
+          <span class="text-xs text-slate-400 font-medium">28 Official Districts</span>
+        </div>
+
+        <label for="poll-district" class="block text-sm font-bold text-slate-800 mb-2">
+          Select Your Arunachal Pradesh District
+        </label>
+        <select
+          id="poll-district"
+          class="district-dropdown block w-full rounded-xl border border-slate-300 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-900 focus:border-brand-600 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition duration-200 ease-in-out"
+        >
+          <option value="">-- Choose Official District --</option>
+        </select>
+      </div>
+
+      <!-- 1-Click Mobile Voting Card -->
+      <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+            Active State Resolution #AP-2026-09
+          </span>
+          <span class="text-xs font-semibold text-emerald-700">1-Click Instant Cast</span>
+        </div>
+
+        <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+          Which rural infrastructure priority requires the highest capital allocation in your district for the upcoming fiscal quarter?
+        </h2>
+
+        <div class="space-y-2.5 pt-2">
+          <button type="button" onclick="submitOneClickVote('All-Weather Inter-Village Roads & Bridges')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 active:scale-[0.99] transition duration-200 ease-in-out flex items-center justify-between group">
+            <div>
+              <p class="text-sm font-bold text-slate-900 group-hover:text-brand-700">All-Weather Inter-Village Roads & Bridges</p>
+              <p class="text-xs text-slate-500 mt-0.5">Landslide-resilient culverts & last-mile connectivity</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-brand-600 group-hover:text-white text-xs font-semibold text-slate-700 transition duration-200 ease-in-out">
+              Vote
+            </span>
+          </button>
+
+          <button type="button" onclick="submitOneClickVote('Solar Micro-Grids & Feeder Stabilization')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 active:scale-[0.99] transition duration-200 ease-in-out flex items-center justify-between group">
+            <div>
+              <p class="text-sm font-bold text-slate-900 group-hover:text-brand-700">Solar Micro-Grids & Feeder Stabilization</p>
+              <p class="text-xs text-slate-500 mt-0.5">Off-grid renewable backup for remote administrative circles</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-brand-600 group-hover:text-white text-xs font-semibold text-slate-700 transition duration-200 ease-in-out">
+              Vote
+            </span>
+          </button>
+
+          <button type="button" onclick="submitOneClickVote('Primary Health Sub-Centre Telemedicine Units')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 active:scale-[0.99] transition duration-200 ease-in-out flex items-center justify-between group">
+            <div>
+              <p class="text-sm font-bold text-slate-900 group-hover:text-brand-700">Primary Health Sub-Centre Telemedicine Units</p>
+              <p class="text-xs text-slate-500 mt-0.5">Diagnostic kits, cold-chain storage & doctor housing</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-brand-600 group-hover:text-white text-xs font-semibold text-slate-700 transition duration-200 ease-in-out">
+              Vote
+            </span>
+          </button>
+
+          <button type="button" onclick="submitOneClickVote('4G/BSNL Saturation & Digital Classrooms')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 active:scale-[0.99] transition duration-200 ease-in-out flex items-center justify-between group">
+            <div>
+              <p class="text-sm font-bold text-slate-900 group-hover:text-brand-700">4G/BSNL Saturation & Digital Classrooms</p>
+              <p class="text-xs text-slate-500 mt-0.5">High-altitude tower relays & smart secondary schools</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-brand-600 group-hover:text-white text-xs font-semibold text-slate-700 transition duration-200 ease-in-out">
+              Vote
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Survey of India Aligned Vector Map Asset (assets/map.svg) -->
+    <div class="lg:col-span-5">
+      <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-sm h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">
+              Survey of India District Boundaries
+            </span>
+            <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              Offline Safe SVG
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">
+            Official vector outline reflecting the Survey of India administrative district boundaries of Arunachal Pradesh.
+          </p>
+
+          <!-- Hardcoded Path to assets/map.svg -->
+          <div class="rounded-xl bg-slate-900 p-4 border border-slate-800 flex flex-col items-center justify-center">
+            <img
+              src="assets/map.svg"
+              alt="Official Survey of India District Boundaries of Arunachal Pradesh"
+              class="w-full h-auto max-h-72 object-contain select-none"
+            />
+            <div class="w-full flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800">
+              <span>Selected District:</span>
+              <span id="svg-selected-district" class="font-bold text-emerald-400">None Selected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+          <span>Session Poll Status:</span>
+          <span id="poll-status-badge" class="font-bold text-slate-800">Ready to Cast</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

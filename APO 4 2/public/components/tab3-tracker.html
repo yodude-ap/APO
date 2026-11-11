@@ -1,0 +1,91 @@
+<!-- ===================================================================== -->
+<!-- FILE 4: components/tab3-tracker.html                                  -->
+<!-- ===================================================================== -->
+<section id="tab-schemes" class="tab-panel tab-transition space-y-6">
+  <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-slate-200">
+      <div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Welfare & Development Scheme Delivery Tracker</h2>
+        <p class="text-xs text-slate-500">Toggle binary ground reach status for flagship Arunachal Pradesh state programs.</p>
+      </div>
+      <div class="w-full sm:w-64">
+        <select id="scheme-district" class="district-dropdown block w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-900 focus:border-brand-600 focus:outline-none">
+          <option value="">-- Filter / Tag District --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Two-Column Interactive Checklist -->
+    <div id="scheme-checklist-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      
+      <!-- Scheme Card 1 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-700">Entrepreneurship & Credit</span>
+          <h3 class="text-sm font-bold text-slate-900 mt-0.5">Deen Dayal Upadhyaya Swavalamban Yojana (DDUSY)</h3>
+          <p class="text-xs text-slate-500 mt-1">40% front-ended capital investment subsidy for youth greenfield enterprises & startups.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+          <button type="button" onclick="recordSchemeStatus('DDUSY', 'Benefited / Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-brand-600 transition duration-200 ease-in-out">
+            ✓ Benefited / Reached
+          </button>
+          <button type="button" onclick="recordSchemeStatus('DDUSY', 'Not Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-red-500 transition duration-200 ease-in-out">
+            ✕ Not Reached
+          </button>
+        </div>
+      </div>
+
+      <!-- Scheme Card 2 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-700">Universal Healthcare</span>
+          <h3 class="text-sm font-bold text-slate-900 mt-0.5">Chief Minister’s Arogya Arunachal Yojana (CMAAY)</h3>
+          <p class="text-xs text-slate-500 mt-1">Cashless healthcare assurance up to ₹5 Lakh per family per year across empaneled hospitals.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+          <button type="button" onclick="recordSchemeStatus('CMAAY', 'Benefited / Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-brand-600 transition duration-200 ease-in-out">
+            ✓ Benefited / Reached
+          </button>
+          <button type="button" onclick="recordSchemeStatus('CMAAY', 'Not Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-red-500 transition duration-200 ease-in-out">
+            ✕ Not Reached
+          </button>
+        </div>
+      </div>
+
+      <!-- Scheme Card 3 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-700">Agri-Horti Mission</span>
+          <h3 class="text-sm font-bold text-slate-900 mt-0.5">Atma Nirbhar Bagwani & Krishi Yojana</h3>
+          <p class="text-xs text-slate-500 mt-1">Credit-linked front-ended subsidies for kiwi, large cardamom, citrus, and farm mechanization.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+          <button type="button" onclick="recordSchemeStatus('ATMA_NIRBHAR_BAGWANI', 'Benefited / Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-brand-600 transition duration-200 ease-in-out">
+            ✓ Benefited / Reached
+          </button>
+          <button type="button" onclick="recordSchemeStatus('ATMA_NIRBHAR_BAGWANI', 'Not Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-red-500 transition duration-200 ease-in-out">
+            ✕ Not Reached
+          </button>
+        </div>
+      </div>
+
+      <!-- Scheme Card 4 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-700">Women & Child Welfare</span>
+          <h3 class="text-sm font-bold text-slate-900 mt-0.5">Dulari Kanya Scheme</h3>
+          <p class="text-xs text-slate-500 mt-1">Fixed deposit institutional birth incentive to empower girl child education and health outcomes.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+          <button type="button" onclick="recordSchemeStatus('DULARI_KANYA', 'Benefited / Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-brand-600 transition duration-200 ease-in-out">
+            ✓ Benefited / Reached
+          </button>
+          <button type="button" onclick="recordSchemeStatus('DULARI_KANYA', 'Not Reached', this)" class="scheme-btn py-2 px-3 rounded-xl text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:border-red-500 transition duration-200 ease-in-out">
+            ✕ Not Reached
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,127 @@
+<!-- ===================================================================== -->
+<!-- FILE 3: components/tab2-pinboard.html                                 -->
+<!-- ===================================================================== -->
+<section id="tab-pinboard" class="tab-panel tab-transition space-y-6">
+  <div class="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-7 shadow-sm max-w-3xl mx-auto">
+    <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b border-slate-200">
+      <div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Geo-Pinboard Civic Reporting</h2>
+        <p class="text-xs text-slate-500">Submit field infrastructure issues with optional GPS coordinates.</p>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        Moderation Queue: is_approved = false
+      </span>
+    </div>
+
+    <form id="pinboard-form" onsubmit="submitGeoPin(event)" class="space-y-5">
+      <!-- Category Selection -->
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+          Select Infrastructure Category *
+        </label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <label class="cursor-pointer">
+            <input type="radio" name="pin_category" value="Roads" checked class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-center font-semibold text-sm text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-800 transition duration-200 ease-in-out">
+              🛣️ Roads
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="pin_category" value="Water" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-center font-semibold text-sm text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-800 transition duration-200 ease-in-out">
+              🚰 Water
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="pin_category" value="School" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-center font-semibold text-sm text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-800 transition duration-200 ease-in-out">
+              🏫 School
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="pin_category" value="Electricity" class="peer sr-only" />
+            <div class="p-3.5 rounded-xl border border-slate-200 text-center font-semibold text-sm text-slate-700 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-800 transition duration-200 ease-in-out">
+              ⚡ Electricity
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- District + Optional Coordinates -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="pin-district" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            District *
+          </label>
+          <select id="pin-district" required class="district-dropdown block w-full rounded-xl border border-slate-300 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-brand-600 focus:bg-white focus:outline-none">
+            <option value="">-- Select District --</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="pin-coords" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Location Coordinates (Optional)
+          </label>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="pin-coords"
+              placeholder="e.g., 27.0844° N, 93.6053° E"
+              class="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-600 focus:outline-none"
+            />
+            <button
+              type="button"
+              onclick="captureGPS()"
+              class="shrink-0 px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition duration-200 ease-in-out"
+              title="Fetch GPS Coordinates"
+            >
+              📍 GPS
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brief Description -->
+      <div>
+        <label for="pin-desc" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+          Brief Issue Description *
+        </label>
+        <textarea
+          id="pin-desc"
+          rows="3"
+          required
+          maxlength="400"
+          placeholder="Describe the exact landmark, severity, and civic impact..."
+          class="block w-full rounded-xl border border-slate-300 p-3.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition duration-200 ease-in-out"
+        ></textarea>
+      </div>
+
+      <!-- Image File Upload -->
+      <div>
+        <label for="pin-image" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+          Upload Field Evidence Photo *
+        </label>
+        <input
+          type="file"
+          id="pin-image"
+          accept="image/*"
+          required
+          class="block w-full text-xs text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-executive-900 file:text-white hover:file:bg-executive-800 cursor-pointer border border-slate-200 rounded-xl p-1.5 bg-slate-50"
+        />
+      </div>
+
+      <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p class="text-[11px] text-slate-500">
+          🔒 Reports enter the <span class="font-mono font-semibold text-slate-700">is_approved = false</span> administrative staging queue and are never published to public feeds automatically.
+        </p>
+        <button
+          type="submit"
+          class="shrink-0 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 text-sm shadow-sm transition duration-200 ease-in-out"
+        >
+          Submit to Admin Queue
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
