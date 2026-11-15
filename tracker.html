@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Scheme Tracker | Arunachal Peoples Opinion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('apo_user') || 'null');
+    if (!currentUser || !currentUser.userHash) {
+      window.location.replace('login.html');
+    }
+  </script>
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-slate-800 p-0.5 border border-slate-700" onerror="this.style.display='none'" />
+      <h1 class="font-extrabold text-sm text-white">Scheme Tracker</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="syncLive(true)" class="p-2 rounded-lg bg-slate-800 text-slate-200 text-xs">🔄</button>
+      <button id="mob-admin-btn" onclick="openSchemeModal()" class="hidden px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-extrabold">+ Scheme</button>
+      <a href="profile.html" class="flex items-center pl-1">
+        <img id="mob-avatar" src="" class="w-8 h-8 rounded-lg object-cover bg-slate-800 border border-emerald-500" />
+      </a>
+    </div>
+  </header>
+
+  <!-- Desktop Left Sidebar -->
+  <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
+    <div>
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-slate-700" onerror="this.style.display='none'" />
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
+          <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">Arunachal Pradesh</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5">
+        <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📊</span> Public Polling</a>
+        <a href="pinboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📍</span> Geo-Pinboard</a>
+        <a href="tracker.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow"><span>🏛️</span> Scheme Tracker</a>
+        <a href="youth.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🎓</span> Youth Portal</a>
+        <a href="speakfree.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🔒</span> Speak Free</a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-800 bg-slate-900/60 space-y-3">
+      <div class="flex items-center gap-3">
+        <img id="side-avatar" src="" class="w-10 h-10 rounded-xl object-cover bg-slate-800 border border-emerald-500" />
+        <div class="overflow-hidden">
+          <p id="side-username" class="text-xs font-extrabold text-white truncate"></p>
+          <p id="side-role" class="text-[11px] text-emerald-400 font-semibold truncate"></p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <a href="profile.html" class="flex-1 py-2 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-slate-200 transition">Profile</a>
+        <button onclick="logout()" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 text-xs font-bold text-slate-300 hover:text-white transition">Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-3.5 md:p-8 overflow-y-auto">
+    <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
+
+      <!-- Clean Header & Filter Bar -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl md:text-3xl font-extrabold text-white">District Welfare Scheme Tracker</h2>
+          <p class="text-xs md:text-sm text-slate-400">Discover schemes, audit ground delivery, and share offline guides with villagers.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="syncLive(true)" id="sync-btn" class="hidden md:inline-flex px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition">
+            🔄 Sync
+          </button>
+          <button onclick="filterMyDistrict()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-800/80 text-xs font-bold text-emerald-400 transition">
+            📍 My District
+          </button>
+          <select id="dist-filter" onchange="renderSchemes()" class="flex-1 sm:flex-none bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs md:text-sm text-white focus:border-emerald-500 focus:outline-none">
+            <option value="All Districts">🌎 All 28 Districts</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+          <button id="admin-scheme-btn" onclick="openSchemeModal()" class="hidden md:inline-flex px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg transition">
+            + Add Scheme
+          </button>
+        </div>
+      </div>
+
+      <!-- Schemes Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="schemes-grid"></div>
+
+    </div>
+  </main>
+
+  <!-- Citizen Audit Modal -->
+  <div id="audit-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-start sm:items-center justify-center p-3 overflow-y-auto z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl my-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="audit-modal-title" class="text-base font-extrabold text-white">Submit Ground Audit</h3>
+        <button onclick="closeAuditModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p id="audit-scheme-name" class="text-xs font-bold text-emerald-400"></p>
+      <div>
+        <label class="text-xs font-semibold text-slate-300">Ground Reality</label>
+        <select id="audit-preset" onchange="document.getElementById('audit-note').value = this.value" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+        </select>
+        <input id="audit-note" type="text" placeholder="Or type a short note for your village/district..." class="w-full mt-2.5 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none" />
+      </div>
+      <button onclick="confirmAuditSubmit()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg">
+        Confirm Audit
+      </button>
+    </div>
+  </div>
+
+  <!-- How to Apply Modal -->
+  <div id="guide-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-start sm:items-center justify-center p-3 overflow-y-auto z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl my-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="guide-title" class="text-base font-extrabold text-white">How to Apply & Guide Others</h3>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div id="guide-body" class="space-y-3 text-xs text-slate-300 bg-slate-950 border border-slate-800 rounded-xl p-4 leading-relaxed"></div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5">
+        <button id="guide-wa-btn" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition shadow-lg">
+          📲 Share Summary on WhatsApp
+        </button>
+        <button onclick="closeGuideModal()" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Add Scheme Modal -->
+  <div id="scheme-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-start sm:items-center justify-center p-3 overflow-y-auto z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-5 space-y-4 shadow-2xl my-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-extrabold text-amber-400">Add Welfare Scheme</h3>
+        <button onclick="closeSchemeModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Category</label>
+          <select id="sch-cat" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white">
+            <option>Healthcare & Medical</option>
+            <option>Agriculture, Horticulture & Livestock</option>
+            <option>Education, Scholarship & Youth</option>
+            <option>Women & Child Welfare</option>
+            <option>Rural Housing, Roads & Infrastructure</option>
+            <option>Entrepreneurship & MSME Subsidy</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Scheme Title</label>
+          <input id="sch-title" type="text" placeholder="e.g., AtmaNirbhar Krishi Yojana" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white" />
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs text-slate-300 font-semibold">Applicable Districts</label>
+          <label class="flex items-center gap-1.5 text-xs font-extrabold text-emerald-400 cursor-pointer">
+            <input type="checkbox" id="all-dists-chk" checked onchange="toggleAllDistrictsBox(this.checked)" class="accent-emerald-500" />
+            <span>All 28 Districts</span>
+          </label>
+        </div>
+        <div id="dist-checkbox-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-3 max-h-40 overflow-y-auto text-[11px]"></div>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300 font-semibold">Benefits, Eligibility & Office to Visit</label>
+        <textarea id="sch-desc" rows="3" placeholder="Explain benefits and how citizens can apply..." class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white"></textarea>
+      </div>
+
+      <button onclick="publishScheme()" id="pub-sch-btn" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg">
+        Publish Scheme
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Fixed 5-Tab Bottom Bar -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 grid grid-cols-5 z-50 text-[10px] font-bold">
+    <a href="index.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📊</span><span>Polls</span></a>
+    <a href="pinboard.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📍</span><span>Pinboard</span></a>
+    <a href="tracker.html" class="flex flex-col items-center justify-center py-2.5 text-emerald-400"><span>🏛️</span><span>Schemes</span></a>
+    <a href="youth.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🎓</span><span>Youth</span></a>
+    <a href="speakfree.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🔒</span><span>Speak Free</span></a>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBBlj3H08CzWrEmvXF4RB_MIYtBC2JTXi-bPZXlmUcei_mOFuKXJh83io82sDAgzkxmA/exec";
+
+    const DISTRICTS_28 = [
+      "Itanagar Capital Complex", "Papum Pare", "Tawang", "West Kameng", "Bichom", "East Kameng",
+      "Pakke-Kessang", "Kurung Kumey", "Kra Daadi", "Lower Subansiri", "Keyi Panyor", "Kamle",
+      "Upper Subansiri", "West Siang", "Lepa Rada", "Shi-Yomi", "East Siang", "Upper Siang",
+      "Lower Siang", "Siang", "Lower Dibang Valley", "Dibang Valley", "Anjaw", "Lohit",
+      "Namsai", "Changlang", "Tirap", "Longding"
+    ];
+
+    const DEFAULT_SCHEMES = [
+      {
+        Scheme_ID: "SCH_201", Target_Districts: "All Districts", Category: "Healthcare & Medical",
+        Title: "CMAAY Health Insurance",
+        Description: "Chief Minister Arogya Arunachal Yojana cashless hospital coverage up to ₹5 Lakh per family.",
+        Benefit_Received_Count: 84, Faced_Delay_Count: 12, Unaware_Count: 29
+      },
+      {
+        Scheme_ID: "SCH_202", Target_Districts: "Tawang, West Kameng, Papum Pare, Lower Subansiri", Category: "Agriculture, Horticulture & Livestock",
+        Title: "AtmaNirbhar Krishi & Bagwani Yojana",
+        Description: "45% government subsidy on credit-linked farm machinery, horticulture, and livestock units.",
+        Benefit_Received_Count: 62, Faced_Delay_Count: 18, Unaware_Count: 54
+      },
+      {
+        Scheme_ID: "SCH_203", Target_Districts: "All Districts", Category: "Women & Child Welfare",
+        Title: "Dulari Kanya Scheme",
+        Description: "₹20,000 fixed deposit grant for institutional girl child births across state government hospitals.",
+        Benefit_Received_Count: 91, Faced_Delay_Count: 6, Unaware_Count: 19
+      }
+    ];
+
+    let allSchemes = [];
+    let auditNotes = [];
+    let pendingAudit = null;
+
+    function initSidebar() {
+      const av = currentUser.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(currentUser.username)}`;
+      document.getElementById('side-username').textContent = currentUser.username;
+      document.getElementById('side-role').textContent = `${currentUser.role || 'Citizen'} • ${currentUser.district || 'AP'}`;
+      document.getElementById('side-avatar').src = av;
+      document.getElementById('mob-avatar').src = av;
+      if (currentUser.role === "Admin") {
+        document.getElementById('admin-scheme-btn').classList.remove('hidden');
+        document.getElementById('mob-admin-btn').classList.remove('hidden');
+      }
+
+      document.getElementById('dist-checkbox-grid').innerHTML = DISTRICTS_28.map(d => `
+        <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer">
+          <input type="checkbox" value="${d}" class="dist-chk accent-amber-500" />
+          <span class="truncate">${d}</span>
+        </label>`).join('');
+    }
+
+    function toggleAllDistrictsBox(isAll) {
+      document.getElementById('dist-checkbox-grid').classList.toggle('hidden', isAll);
+    }
+
+    function openSchemeModal() { document.getElementById('scheme-modal').classList.replace('hidden', 'flex'); }
+    function closeSchemeModal() { document.getElementById('scheme-modal').classList.replace('flex', 'hidden'); }
+
+    async function syncLive(showSpinner) {
+      const btn = document.getElementById('sync-btn');
+      if (showSpinner && btn) btn.textContent = "⏳...";
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (cached && cached.schemes && allSchemes.length === 0) {
+        allSchemes = (cached.schemes || []).slice().reverse();
+        auditNotes = (cached.posts || []).filter(p => p.Tool_Type === "scheme_audit").reverse();
+        renderSchemes();
+      } else if (allSchemes.length === 0) {
+        allSchemes = DEFAULT_SCHEMES;
+        renderSchemes();
+      }
+
+      try {
+        const res = await fetch(API_URL + "?action=getAllData");
+        const data = await res.json();
+        if (data && data.ok) {
+          localStorage.setItem('apo_cache', JSON.stringify(data));
+          allSchemes = (data.schemes && data.schemes.length > 0) ? data.schemes.slice().reverse() : DEFAULT_SCHEMES;
+          auditNotes = (data.posts || []).filter(p => p.Tool_Type === "scheme_audit").reverse();
+          renderSchemes();
+        }
+      } catch (e) {}
+
+      if (btn) btn.textContent = "🔄 Sync";
+    }
+
+    function renderSchemes() {
+      const dist = document.getElementById('dist-filter').value;
+      const grid = document.getElementById('schemes-grid');
+      const auditedMap = JSON.parse(localStorage.getItem('apo_audited_schemes') || '{}');
+      const localUnaware = JSON.parse(localStorage.getItem('apo_unaware_counts') || '{}');
+
+      const filtered = allSchemes.filter(s => {
+        const td = String(s.Target_Districts || "All Districts");
+        return dist === "All Districts" || td === "All Districts" || td.toLowerCase().includes(dist.toLowerCase());
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-xs text-slate-400">No schemes listed for ${dist} yet.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(s => {
+        const pos = Number(s.Benefit_Received_Count || 0);
+        const neg = Number(s.Faced_Delay_Count || 0);
+        const serverUnaware = auditNotes.filter(n => String(n.Category) === String(s.Scheme_ID) && String(n.GPS_Meta) === "UNAWARE").length;
+        const baseUnaware = Number(s.Unaware_Count || (s.Scheme_ID === 'SCH_202' ? 54 : 21));
+        const unaware = baseUnaware + serverUnaware + Number(localUnaware[s.Scheme_ID] || 0);
+
+        const total = pos + neg + unaware;
+        const posPct = total > 0 ? Math.round((pos / total) * 100) : 50;
+        const negPct = total > 0 ? Math.round((neg / total) * 100) : 20;
+        const unawPct = Math.max(0, 100 - posPct - negPct);
+
+        const myChoice = auditedMap[s.Scheme_ID];
+        const isHighUnawareness = unawPct >= 35;
+
+        const notesForScheme = auditNotes.filter(n => String(n.Category) === String(s.Scheme_ID)).slice(0, 2);
+        const notesHtml = notesForScheme.length > 0
+          ? `<div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+               ${notesForScheme.map(n => {
+                 const tagColor = n.GPS_Meta === 'UNAWARE' ? 'text-rose-400' : (n.GPS_Meta === 'DELAY' ? 'text-amber-400' : 'text-emerald-400');
+                 return `<div class="text-[11px] bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-300">
+                   <span class="font-bold ${tagColor}">${n.Author_Username} (${n.District}):</span> ${n.Content}
+                 </div>`;
+               }).join('')}
+             </div>`
+          : '';
+
+        const adminDel = (currentUser.role === "Admin")
+          ? `<button onclick="deleteScheme('${s.Scheme_ID}')" class="text-[11px] font-bold text-rose-400 hover:underline">🗑️ Delete</button>`
+          : '';
+
+        const safeTitle = String(s.Title || '').replace(/'/g, '');
+        const safeCat = String(s.Category || '').replace(/'/g, '');
+        const safeDesc = String(s.Description || '').replace(/'/g, '');
+        const safeDists = String(s.Target_Districts || 'All Districts').replace(/'/g, '');
+
+        return `
+          <div class="bg-slate-900 border ${isHighUnawareness ? 'border-rose-800/70' : 'border-slate-800'} rounded-2xl p-4 md:p-5 flex flex-col justify-between space-y-4 shadow-lg">
+            <div class="space-y-2.5">
+              <div class="flex flex-wrap justify-between items-center gap-2">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800">${s.Category}</span>
+                <div class="flex items-center gap-2">
+                  ${isHighUnawareness ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">📢 Low Awareness</span>` : ''}
+                  ${adminDel}
+                </div>
+              </div>
+              <p class="text-[11px] text-amber-400 font-semibold">📍 ${s.Target_Districts}</p>
+              <h3 class="text-lg font-extrabold text-white leading-snug">${s.Title}</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">${s.Description}</p>
+
+              <div class="flex gap-2 pt-1">
+                <button onclick="openGuideModal('${safeTitle}', '${safeCat}', '${safeDesc}', '${safeDists}')" class="flex-1 py-1.5 px-2.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-[11px] font-bold text-emerald-400 transition">
+                  📖 How to Apply
+                </button>
+                <button onclick="shareSchemeText('${safeTitle}', '${safeDesc}', '${safeDists}')" class="py-1.5 px-3 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-[11px] font-bold text-slate-300 transition">
+                  📲 Share
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-2 border-t border-slate-800/80">
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-[11px] font-bold">
+                  <span class="text-emerald-400">👍 ${pos} Got It</span>
+                  <span class="text-amber-400">⚠️ ${neg} Delayed</span>
+                  <span class="text-rose-400">📢 ${unaware} Never Heard</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
+                  <div class="bg-emerald-500 h-full" style="width: ${posPct}%"></div>
+                  <div class="bg-amber-500 h-full" style="width: ${negPct}%"></div>
+                  <div class="bg-rose-500 h-full" style="width: ${unawPct}%"></div>
+                </div>
+              </div>
+
+              ${notesHtml}
+
+              <div class="grid grid-cols-3 gap-1.5 pt-1">
+                <button onclick="openAuditModal('${s.Scheme_ID}', '${safeTitle}', 'positive')" class="py-2 px-1 rounded-xl text-[11px] font-extrabold border transition ${myChoice === 'positive' ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-slate-950 hover:bg-emerald-600/20 text-emerald-400 border-slate-700'}">
+                  👍 Received ${myChoice === 'positive' ? '✓' : ''}
+                </button>
+                <button onclick="openAuditModal('${s.Scheme_ID}', '${safeTitle}', 'negative')" class="py-2 px-1 rounded-xl text-[11px] font-extrabold border transition ${myChoice === 'negative' ? 'bg-amber-600 text-slate-950 border-amber-400' : 'bg-slate-950 hover:bg-amber-500/20 text-amber-400 border-slate-700'}">
+                  ⚠️ Delay/Bias ${myChoice === 'negative' ? '✓' : ''}
+                </button>
+                <button onclick="openAuditModal('${s.Scheme_ID}', '${safeTitle}', 'unaware')" class="py-2 px-1 rounded-xl text-[11px] font-extrabold border transition ${myChoice === 'unaware' ? 'bg-rose-600 text-white border-rose-400' : 'bg-slate-950 hover:bg-rose-600/20 text-rose-400 border-slate-700'}">
+                  📢 Unaware ${myChoice === 'unaware' ? '✓' : ''}
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openAuditModal(schemeId, title, ratingType) {
+      const auditedMap = JSON.parse(localStorage.getItem('apo_audited_schemes') || '{}');
+      if (auditedMap[schemeId]) {
+        alert("You have already recorded your audit for this scheme.");
+        return;
+      }
+      pendingAudit = { schemeId, ratingType };
+
+      const titleEl = document.getElementById('audit-modal-title');
+      const presetEl = document.getElementById('audit-preset');
+
+      if (ratingType === 'positive') {
+        titleEl.textContent = '👍 Confirm Benefit Received';
+        presetEl.innerHTML = `
+          <option value="Direct Benefit Transfer (DBT) / subsidy received fairly on time.">✓ Benefit / Subsidy credited fairly on time</option>
+          <option value="Applied through District / Circle office and received support smoothly.">✓ Applied through District / Circle office smoothly</option>`;
+      } else if (ratingType === 'negative') {
+        titleEl.textContent = '⚠️ Report Delay or Favoritism';
+        presetEl.innerHTML = `
+          <option value="Benefits quietly given to connected/favored individuals without public notice.">🚫 Benefits given to connected/favored people</option>
+          <option value="Pending verification at District / Circle Office for months.">⚠️ Pending at District / Circle Office for months</option>
+          <option value="Bank branch delaying loan linkage / subsidy release.">⚠️ Bank branch delaying subsidy release</option>
+          <option value="Middlemen / officials demanding commission to clear file.">🚨 Officials / middlemen demanding cut to clear file</option>`;
+      } else {
+        titleEl.textContent = '📢 Report Zero Department Awareness';
+        presetEl.innerHTML = `
+          <option value="Zero awareness camp or public notice by department in our village/circle.">📢 Zero awareness camp by department in our village/circle</option>
+          <option value="Never heard of this scheme until seeing it here — rural citizens kept in the dark.">📢 Never heard of this scheme until today</option>
+          <option value="No offline forms or guidance available at local Circle / BDO office.">🌐 No offline guidance at Circle office for villagers</option>`;
+      }
+
+      document.getElementById('audit-scheme-name').textContent = title;
+      document.getElementById('audit-note').value = presetEl.value;
+      document.getElementById('audit-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeAuditModal() {
+      document.getElementById('audit-modal').classList.replace('flex', 'hidden');
+    }
+
+    async function confirmAuditSubmit() {
+      if (!pendingAudit) return;
+      const { schemeId, ratingType } = pendingAudit;
+      const note = document.getElementById('audit-note').value.trim();
+
+      const auditedMap = JSON.parse(localStorage.getItem('apo_audited_schemes') || '{}');
+      auditedMap[schemeId] = ratingType;
+      localStorage.setItem('apo_audited_schemes', JSON.stringify(auditedMap));
+
+      const target = allSchemes.find(s => String(s.Scheme_ID) === String(schemeId));
+      if (target) {
+        if (ratingType === 'positive') target.Benefit_Received_Count = Number(target.Benefit_Received_Count || 0) + 1;
+        else if (ratingType === 'negative') target.Faced_Delay_Count = Number(target.Faced_Delay_Count || 0) + 1;
+        else {
+          const localUnaware = JSON.parse(localStorage.getItem('apo_unaware_counts') || '{}');
+          localUnaware[schemeId] = Number(localUnaware[schemeId] || 0) + 1;
+          localStorage.setItem('apo_unaware_counts', JSON.stringify(localUnaware));
+        }
+      }
+
+      const metaTag = ratingType === 'unaware' ? 'UNAWARE' : (ratingType === 'positive' ? 'RECEIVED' : 'DELAY');
+      if (note) {
+        auditNotes.unshift({
+          Category: schemeId,
+          Author_Username: currentUser.username,
+          District: currentUser.district || 'AP',
+          Content: note,
+          GPS_Meta: metaTag
+        });
+      }
+      closeAuditModal();
+      renderSchemes();
+
+      try {
+        if (ratingType === 'unaware') {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "createPost",
+              toolType: "scheme_audit",
+              userHash: currentUser.userHash,
+              username: currentUser.username,
+              avatar: currentUser.avatar,
+              district: currentUser.district,
+              category: schemeId,
+              content: note || "Never heard of this scheme — zero awareness camp in our area.",
+              gpsMeta: "UNAWARE"
+            })
+          });
+        } else {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "rateScheme",
+              schemeId,
+              ratingType,
+              note,
+              userHash: currentUser.userHash,
+              username: currentUser.username,
+              avatar: currentUser.avatar,
+              district: currentUser.district
+            })
+          });
+        }
+      } catch (e) {}
+    }
+
+    function openGuideModal(title, category, desc, dists) {
+      document.getElementById('guide-title').textContent = title;
+      document.getElementById('guide-body').innerHTML = `
+        <p><strong class="text-emerald-400">📌 Benefits:</strong> ${desc}</p>
+        <p><strong class="text-emerald-400">📍 Eligible Districts:</strong> ${dists}</p>
+        <div class="pt-2 border-t border-slate-800 space-y-1">
+          <p class="font-bold text-white">📋 Required Documents:</p>
+          <ul class="list-disc pl-5 text-slate-300 space-y-0.5">
+            <li>APST Certificate & PRC / Aadhaar Card</li>
+            <li>Active Bank Passbook (DBT-linked account)</li>
+            <li>Passport Photo & Local Gaon Burah / Circle Officer verification</li>
+          </ul>
+        </div>
+        <div class="pt-2 border-t border-slate-800">
+          <p><strong class="text-amber-400">🏢 Offline Application:</strong> Visit the District Nodal Office (${category}), Block Development Office (BDO), or nearest Jan Suvidha / CSC Center.</p>
+        </div>`;
+
+      document.getElementById('guide-wa-btn').onclick = function() {
+        shareSchemeText(title, desc, dists);
+      };
+      document.getElementById('guide-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeGuideModal() {
+      document.getElementById('guide-modal').classList.replace('flex', 'hidden');
+    }
+
+    function shareSchemeText(title, desc, dists) {
+      const msg = `📢 *ARUNACHAL WELFARE SCHEME GUIDE*\n\n*Scheme:* ${title}\n*Districts:* ${dists}\n*Benefits:* ${desc}\n\n👉 *How to Apply Offline:* Visit your Circle Officer / BDO or District Nodal Department with APST, Aadhaar & Bank Passbook.`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    async function publishScheme() {
+      const isAll = document.getElementById('all-dists-chk').checked;
+      let targetDistricts = "All Districts";
+      if (!isAll) {
+        const checked = Array.from(document.querySelectorAll('.dist-chk:checked')).map(cb => cb.value);
+        if (checked.length === 0) {
+          alert("Please select at least one district.");
+          return;
+        }
+        targetDistricts = checked.join(", ");
+      }
+
+      const category = document.getElementById('sch-cat').value;
+      const title = document.getElementById('sch-title').value.trim();
+      const description = document.getElementById('sch-desc').value.trim();
+
+      if (!title || !description) {
+        alert("Please enter the title and description.");
+        return;
+      }
+
+      allSchemes.unshift({
+        Scheme_ID: "SCH_" + Date.now(), Target_Districts: targetDistricts,
+        Category: category, Title: title, Description: description,
+        Benefit_Received_Count: 1, Faced_Delay_Count: 0, Unaware_Count: 0
+      });
+      renderSchemes();
+      closeSchemeModal();
+
+      document.getElementById('sch-title').value = '';
+      document.getElementById('sch-desc').value = '';
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "createScheme",
+            userHash: currentUser.userHash,
+            targetDistricts, category, title, description
+          })
+        });
+      } catch (e) {}
+    }
+
+    async function deleteScheme(schemeId) {
+      if (!confirm("Delete this scheme?")) return;
+      allSchemes = allSchemes.filter(s => String(s.Scheme_ID) !== String(schemeId));
+      renderSchemes();
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "adminMod", userHash: currentUser.userHash, modType: "deleteScheme", targetId: schemeId })
+        });
+      } catch (e) {}
+    }
+
+    function filterMyDistrict() {
+      document.getElementById('dist-filter').value = currentUser.district || "Itanagar Capital Complex";
+      renderSchemes();
+    }
+
+    function logout() {
+      if (confirm("Switch user or log out?")) {
+        localStorage.removeItem('apo_user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    initSidebar();
+    syncLive(false);
+  </script>
+</body>
+</html>

@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Admin Command Center | Arunachal Peoples Opinion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      aside, header, nav, .no-print { display: none !important; }
+      body, main { background: #ffffff !important; color: #000000 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('apo_user') || 'null');
+    if (!currentUser || !currentUser.userHash) {
+      window.location.replace('login.html');
+    } else if (currentUser.role !== 'Admin') {
+      window.location.replace('index.html');
+    }
+  </script>
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden bg-slate-900 border-b border-amber-700/60 px-3.5 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-extrabold text-xs">⚡ ADMIN</span>
+      <h1 id="mob-header-title" class="font-extrabold text-sm text-white">Command Center</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="syncAdminData(true)" class="p-2 rounded-lg bg-slate-800 text-slate-200 text-xs">🔄</button>
+      <button onclick="logout()" class="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold">Logout</button>
+    </div>
+  </header>
+
+  <!-- Desktop Left Sidebar (Strictly Stays Inside Admin Dashboard) -->
+  <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
+    <div>
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-amber-500/70" onerror="this.style.display='none'" />
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
+          <p class="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider">⚡ Admin Command</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5">
+        <button onclick="selectAdminView('overview')" id="nav-overview" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-sm shadow-lg transition">
+          <span class="flex items-center gap-3"><span>⚡</span> Admin Dashboard</span>
+        </button>
+
+        <div class="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Manage Modules</div>
+
+        <button onclick="selectAdminView('polls')" id="nav-polls" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>📊</span> Public Polling</span>
+          <span id="badge-polls" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+
+        <button onclick="selectAdminView('pinboard')" id="nav-pinboard" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>📍</span> Geo-Pinboard</span>
+          <span id="badge-pinboard" class="text-[10px] px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 font-bold">0</span>
+        </button>
+
+        <button onclick="selectAdminView('schemes')" id="nav-schemes" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>🏛️</span> Scheme Tracker</span>
+          <span id="badge-schemes" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+
+        <button onclick="selectAdminView('youth')" id="nav-youth" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>🎓</span> Youth Portal</span>
+          <span id="badge-youth" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+
+        <button onclick="selectAdminView('speakfree')" id="nav-speakfree" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>🔒</span> Speak Free</span>
+          <span id="badge-speakfree" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+
+        <button onclick="selectAdminView('users')" id="nav-users" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+          <span class="flex items-center gap-3"><span>👥</span> Citizens Directory</span>
+          <span id="badge-users" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-800 bg-slate-900/60 space-y-3">
+      <div class="flex items-center gap-3">
+        <img id="side-avatar" src="" class="w-10 h-10 rounded-xl object-cover bg-slate-800 border border-amber-500" />
+        <div class="overflow-hidden">
+          <p id="side-username" class="text-xs font-extrabold text-white truncate"></p>
+          <p id="side-role" class="text-[11px] text-amber-400 font-bold truncate"></p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <a href="profile.html" class="flex-1 py-2 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-slate-200 transition">Profile</a>
+        <button onclick="logout()" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 text-xs font-bold text-slate-300 hover:text-white transition">Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Admin Command Workspace -->
+  <main class="flex-1 p-3.5 md:p-8 overflow-y-auto">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+      <!-- Top Command Bar -->
+      <div class="bg-gradient-to-r from-amber-950/60 via-slate-900 to-slate-900 border border-amber-700/60 rounded-2xl p-4 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-extrabold uppercase tracking-wider">State Executive View</span>
+            <span id="last-sync-time" class="text-xs text-slate-400 font-mono">Syncing live data...</span>
+          </div>
+          <h2 id="view-main-title" class="text-xl md:text-3xl font-extrabold text-white">Arunachal Pradesh — State Civic Command Center</h2>
+          <p id="view-main-sub" class="text-xs md:text-sm text-slate-300">Real-time intelligence, 28-district grievance hotspots, scheme audits, and unified moderation.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <button onclick="openQuickPollModal()" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow transition">
+            📊 + Publish Poll
+          </button>
+          <button onclick="openQuickSchemeModal()" class="px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow transition">
+            🏛️ + Add Scheme
+          </button>
+          <button onclick="exportOfficialCSV()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-slate-100 transition">
+            📥 Export CSV
+          </button>
+          <button onclick="window.print()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-slate-100 transition">
+            🖨️ Print Report
+          </button>
+          <button onclick="syncAdminData(true)" id="sync-btn" class="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-600/60 text-xs font-bold text-amber-400 transition">
+            🔄 Sync Sheet
+          </button>
+        </div>
+      </div>
+
+      <!-- Global District Filter -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">📍 Filter Command Data by District:</span>
+        </div>
+        <select id="admin-dist-filter" onchange="renderDashboard()" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs md:text-sm text-white font-semibold focus:border-amber-500 focus:outline-none">
+          <option value="All Districts">🌎 All 28 Districts (State-Wide Summary)</option>
+          <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+          <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+          <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+          <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+          <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+          <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+          <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+          <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+          <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+        </select>
+      </div>
+
+      <!-- 1. STATE-WIDE EXECUTIVE SUMMARY CARDS (6 KPI Cards — Clickable) -->
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+        <div onclick="selectAdminView('users')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Registered Citizens</p>
+          <p id="kpi-users" class="text-2xl md:text-3xl font-extrabold text-white">0</p>
+          <p id="kpi-users-sub" class="text-[11px] text-emerald-400 font-semibold">Verified Accounts</p>
+        </div>
+
+        <div onclick="selectAdminView('polls')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Public Polls & Votes</p>
+          <p id="kpi-polls" class="text-2xl md:text-3xl font-extrabold text-emerald-400">0</p>
+          <p id="kpi-votes-sub" class="text-[11px] text-slate-300 font-semibold">0 Total Votes Cast</p>
+        </div>
+
+        <div onclick="selectAdminView('pinboard')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-rose-900/60 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-rose-300 uppercase">Pinboard Issues</p>
+          <p id="kpi-pins-open" class="text-2xl md:text-3xl font-extrabold text-rose-400">0</p>
+          <p id="kpi-pins-sub" class="text-[11px] text-slate-400 font-semibold">0 Critical • 0 Resolved</p>
+        </div>
+
+        <div onclick="selectAdminView('schemes')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-amber-900/60 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-amber-300 uppercase">Scheme Audits</p>
+          <p id="kpi-schemes" class="text-2xl md:text-3xl font-extrabold text-amber-400">0</p>
+          <p id="kpi-schemes-sub" class="text-[11px] text-slate-400 font-semibold">0 Delay / Unaware</p>
+        </div>
+
+        <div onclick="selectAdminView('youth')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Youth Pulse Posts</p>
+          <p id="kpi-youth" class="text-2xl md:text-3xl font-extrabold text-sky-400">0</p>
+          <p class="text-[11px] text-slate-400 font-semibold">Startup & Job Needs</p>
+        </div>
+
+        <div onclick="selectAdminView('speakfree')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Speak Free Reports</p>
+          <p id="kpi-anon" class="text-2xl md:text-3xl font-extrabold text-purple-400">0</p>
+          <p class="text-[11px] text-slate-400 font-semibold">Whistleblower & Policy</p>
+        </div>
+      </div>
+
+      <!-- 2. OVERVIEW GRID: 28-DISTRICT HOTSPOT TRACKER & TOP ALERTS (Shown on Overview Tab) -->
+      <div id="overview-analytics-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- District Grievance & Activity Hotspot Table (7 Cols) -->
+        <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 space-y-3 shadow-lg">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="font-extrabold text-sm md:text-base text-white">🔥 28-District Civic Hotspot & Grievance Tracker</h3>
+              <p class="text-[11px] text-slate-400">Ranked by urgent Pinboard issues, anonymous reports, and active participation.</p>
+            </div>
+            <span class="text-[11px] font-mono text-amber-400 font-bold">Live Breakdown</span>
+          </div>
+
+          <div class="overflow-x-auto max-h-80 overflow-y-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-2 px-2">District</th>
+                  <th class="py-2 px-2 text-center">🔴 Open Pins</th>
+                  <th class="py-2 px-2 text-center">🟢 Resolved</th>
+                  <th class="py-2 px-2 text-center">🔒 Speak Free</th>
+                  <th class="py-2 px-2 text-center">🎓 Youth</th>
+                  <th class="py-2 px-2 text-center">📊 Votes</th>
+                </tr>
+              </thead>
+              <tbody id="hotspot-table-body" class="divide-y divide-slate-800/70"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Polls & Welfare Scheme Audit Summary (5 Cols) -->
+        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 space-y-4 shadow-lg">
+          <div class="border-b border-slate-800 pb-3">
+            <h3 class="font-extrabold text-sm md:text-base text-white">📊 Top Public Opinion & Scheme Alerts</h3>
+            <p class="text-[11px] text-slate-400">Leading polls and schemes requiring administrative attention.</p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Most Voted Public Polls</p>
+              <button onclick="selectAdminView('polls')" class="text-[11px] text-slate-400 hover:text-white font-bold">Manage All →</button>
+            </div>
+            <div id="top-polls-summary" class="space-y-2.5"></div>
+          </div>
+
+          <div class="space-y-3 pt-2 border-t border-slate-800">
+            <div class="flex items-center justify-between">
+              <p class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400">Welfare Scheme Delivery Bottlenecks</p>
+              <button onclick="selectAdminView('schemes')" class="text-[11px] text-slate-400 hover:text-white font-bold">Manage All →</button>
+            </div>
+            <div id="top-schemes-summary" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. UNIFIED MODERATION & MODULE MANAGEMENT WORKSPACE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <h3 id="queue-section-title" class="font-extrabold text-base md:text-lg text-white">🛡️ Unified Moderation & Action Queue</h3>
+            <p id="queue-section-sub" class="text-xs text-slate-400">Review, edit, resolve, or delete content across all modules from one command table.</p>
+          </div>
+
+          <!-- Queue Module Switcher -->
+          <div class="flex flex-wrap gap-1.5 no-print">
+            <button onclick="switchQueueTab('polls')" id="qtab-polls" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs">📊 Polls</button>
+            <button onclick="switchQueueTab('pinboard')" id="qtab-pinboard" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">📍 Pinboard</button>
+            <button onclick="switchQueueTab('schemes')" id="qtab-schemes" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🏛️ Schemes</button>
+            <button onclick="switchQueueTab('youth')" id="qtab-youth" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🎓 Youth</button>
+            <button onclick="switchQueueTab('speakfree')" id="qtab-speakfree" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🔒 Speak Free</button>
+            <button onclick="switchQueueTab('users')" id="qtab-users" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">👥 Users Directory</button>
+          </div>
+        </div>
+
+        <div id="queue-container" class="space-y-3 max-h-[600px] overflow-y-auto pr-1"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Create / Edit Official Poll Modal -->
+  <div id="quick-poll-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="qp-modal-title" class="text-base font-extrabold text-white">📊 Publish Official Poll</h3>
+        <button onclick="document.getElementById('quick-poll-modal').classList.replace('flex','hidden')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Target District</label>
+          <select id="qp-dist" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="All Districts">All Districts (State-Wide)</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Category</label>
+          <select id="qp-cat" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="Official State Poll">🏛️ Official State Poll</option>
+            <option value="State Policy & Governance">📜 State Policy & Governance</option>
+            <option value="Infrastructure Priority">🛣️ Infrastructure Priority</option>
+            <option value="MLA / Leadership Poll">🗳️ MLA / Leadership Poll</option>
+            <option value="Youth & Education">🎓 Youth & Education</option>
+          </select>
+        </div>
+      </div>
+      <input id="qp-q" type="text" placeholder="Poll Question..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <input id="qp-o1" type="text" placeholder="Option 1 (Required)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <input id="qp-o2" type="text" placeholder="Option 2 (Required)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <input id="qp-o3" type="text" placeholder="Option 3 (Optional)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <input id="qp-o4" type="text" placeholder="Option 4 (Optional)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+      </div>
+      <button id="qp-submit-btn" onclick="adminCreatePoll()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg">
+        🚀 Publish Official Poll
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Add Scheme Modal -->
+  <div id="quick-scheme-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-extrabold text-amber-400">🏛️ Publish Welfare Scheme</h3>
+        <button onclick="document.getElementById('quick-scheme-modal').classList.replace('flex','hidden')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Target District(s)</label>
+          <select id="qs-dist" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="All Districts">All Districts (State-Wide)</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Department / Category</label>
+          <select id="qs-cat" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option>Agriculture & Livestock</option>
+            <option>Healthcare</option>
+            <option>Women & Child Welfare</option>
+            <option>Youth, Skill & Startup</option>
+            <option>Rural Housing & Infrastructure</option>
+          </select>
+        </div>
+      </div>
+      <input id="qs-title" type="text" placeholder="Scheme Name (e.g., AtmaNirbhar Krishi Yojana)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+      <textarea id="qs-desc" rows="3" placeholder="Subsidy / benefits details and how citizens can apply..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white"></textarea>
+      <button onclick="adminCreateScheme()" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg">
+        🏛️ Publish Scheme
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Fixed Bottom Bar (Stays Inside Admin) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 grid grid-cols-6 z-50 text-[10px] font-bold">
+    <button onclick="selectAdminView('overview')" id="mnav-overview" class="flex flex-col items-center justify-center py-2.5 text-amber-400"><span>⚡</span><span>Overview</span></button>
+    <button onclick="selectAdminView('polls')" id="mnav-polls" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📊</span><span>Polls</span></button>
+    <button onclick="selectAdminView('pinboard')" id="mnav-pinboard" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📍</span><span>Pinboard</span></button>
+    <button onclick="selectAdminView('schemes')" id="mnav-schemes" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🏛️</span><span>Schemes</span></button>
+    <button onclick="selectAdminView('youth')" id="mnav-youth" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🎓</span><span>Youth</span></button>
+    <button onclick="selectAdminView('speakfree')" id="mnav-speakfree" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🔒</span><span>Speak</span></button>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBBlj3H08CzWrEmvXF4RB_MIYtBC2JTXi-bPZXlmUcei_mOFuKXJh83io82sDAgzkxmA/exec";
+
+    const ALL_28_DISTRICTS = [
+      "Itanagar Capital Complex", "Papum Pare", "Tawang", "West Kameng", "Bichom", "East Kameng",
+      "Pakke-Kessang", "Kurung Kumey", "Kra Daadi", "Lower Subansiri", "Keyi Panyor", "Kamle",
+      "Upper Subansiri", "West Siang", "Lepa Rada", "Shi-Yomi", "East Siang", "Upper Siang",
+      "Lower Siang", "Siang", "Lower Dibang Valley", "Dibang Valley", "Anjaw", "Lohit",
+      "Namsai", "Changlang", "Tirap", "Longding"
+    ];
+
+    let rawData = { users: [], polls: [], votes: [], schemes: [], schemeAudits: [], posts: [] };
+    let activeAdminView = "overview";
+    let activeQueueTab = "polls";
+    let editingPollId = null;
+    let preservedImgs = { 1: "", 2: "", 3: "", 4: "" };
+
+    function initSidebar() {
+      const av = currentUser.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(currentUser.username)}`;
+      document.getElementById('side-username').textContent = currentUser.username;
+      document.getElementById('side-role').textContent = `⚡ Admin • ${currentUser.district || 'State HQ'}`;
+      document.getElementById('side-avatar').src = av;
+    }
+
+    // Switches Left Sidebar Views WITHOUT leaving admin.html
+    function selectAdminView(viewName) {
+      activeAdminView = viewName;
+      const allNavs = ['overview', 'polls', 'pinboard', 'schemes', 'youth', 'speakfree', 'users'];
+
+      allNavs.forEach(k => {
+        const sideBtn = document.getElementById('nav-' + k);
+        if (sideBtn) {
+          if (k === viewName) {
+            sideBtn.className = "w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-sm shadow-lg transition";
+          } else {
+            sideBtn.className = "w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition";
+          }
+        }
+        const mobBtn = document.getElementById('mnav-' + k);
+        if (mobBtn) {
+          mobBtn.className = (k === viewName)
+            ? "flex flex-col items-center justify-center py-2.5 text-amber-400"
+            : "flex flex-col items-center justify-center py-2.5 text-slate-400";
+        }
+      });
+
+      const overviewGrid = document.getElementById('overview-analytics-grid');
+      const titleEl = document.getElementById('view-main-title');
+      const subEl = document.getElementById('view-main-sub');
+      const qTitle = document.getElementById('queue-section-title');
+
+      const titles = {
+        overview: ["Arunachal Pradesh — State Civic Command Center", "Real-time intelligence, 28-district grievance hotspots, scheme audits, and unified moderation.", "🛡️ Unified Moderation & Action Queue"],
+        polls: ["📊 Public Polling — Admin Control", "View live vote breakdowns, publish official polls, edit questions, or remove polls.", "📊 All Active Public Polls"],
+        pinboard: ["📍 Geo-Pinboard — Grievance Resolution", "Inspect citizen-reported ground infrastructure issues, mark resolved, or remove spam.", "📍 Citizen Ground Reports Queue"],
+        schemes: ["🏛️ Welfare Scheme Tracker — Admin Control", "Publish state welfare schemes, monitor citizen Delay/Unaware flags, and manage listings.", "🏛️ Active Welfare Schemes"],
+        youth: ["🎓 Youth Skill, Startup & Job Pulse — Moderation", "Review youth proposals, employment feedback, and startup support requests across districts.", "🎓 Youth Portal Posts"],
+        speakfree: ["🔒 Speak Free — Whistleblower & Policy Reports", "Review anonymous citizen reports and political opinions across all 28 districts.", "🔒 Anonymous Speak Free Reports"],
+        users: ["👥 Registered Citizens Directory", "View verified citizen and administrator accounts across Arunachal Pradesh.", "👥 Verified Platform Accounts"]
+      };
+
+      if (titles[viewName]) {
+        titleEl.textContent = titles[viewName][0];
+        subEl.textContent = titles[viewName][1];
+        qTitle.textContent = titles[viewName][2];
+      }
+
+      if (viewName === 'overview') {
+        overviewGrid.classList.remove('hidden');
+        switchQueueTab(activeQueueTab);
+      } else {
+        overviewGrid.classList.add('hidden');
+        switchQueueTab(viewName);
+      }
+    }
+
+    async function syncAdminData(showSpinner) {
+      const btn = document.getElementById('sync-btn');
+      if (showSpinner && btn) btn.textContent = "⏳ Syncing...";
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (cached && rawData.polls.length === 0) {
+        rawData = {
+          users: cached.users || [],
+          polls: cached.polls || [],
+          votes: cached.votes || [],
+          schemes: cached.schemes || [],
+          schemeAudits: cached.schemeAudits || [],
+          posts: cached.posts || []
+        };
+        renderDashboard();
+      }
+
+      try {
+        const res = await fetch(API_URL + "?action=getAllData");
+        const data = await res.json();
+        if (data && data.ok) {
+          localStorage.setItem('apo_cache', JSON.stringify(data));
+          rawData = {
+            users: data.users || [],
+            polls: data.polls || [],
+            votes: data.votes || [],
+            schemes: data.schemes || [],
+            schemeAudits: data.schemeAudits || [],
+            posts: data.posts || []
+          };
+          document.getElementById('last-sync-time').textContent = "Last Synced: " + new Date().toLocaleTimeString();
+          renderDashboard();
+        }
+      } catch (e) {
+        document.getElementById('last-sync-time').textContent = "Offline Cache Mode";
+      }
+
+      if (btn) btn.textContent = "🔄 Sync Sheet";
+    }
+
+    function renderDashboard() {
+      const dist = document.getElementById('admin-dist-filter').value;
+      const inDist = (d) => dist === "All Districts" || d === dist || d === "All Districts";
+
+      const users = rawData.users.filter(u => dist === "All Districts" || u.District === dist);
+      const polls = rawData.polls.filter(p => inDist(p.Target_District));
+      const votes = rawData.votes.filter(v => dist === "All Districts" || v.District === dist);
+      const schemes = rawData.schemes.filter(s => dist === "All Districts" || String(s.Target_Districts).includes("All Districts") || String(s.Target_Districts).includes(dist));
+      const posts = rawData.posts.filter(p => dist === "All Districts" || p.District === dist);
+
+      const pins = posts.filter(p => p.Tool_Type === "pinboard");
+      const openPins = pins.filter(p => !String(p.GPS_Meta || '').includes('[RESOLVED]'));
+      const critPins = openPins.filter(p => String(p.Category).includes('🚨') || String(p.GPS_Meta).includes('CRITICAL'));
+      const resPins = pins.filter(p => String(p.GPS_Meta || '').includes('[RESOLVED]'));
+
+      const youthPosts = posts.filter(p => p.Tool_Type === "youth");
+      const anonPosts = posts.filter(p => p.Tool_Type === "speakfree");
+
+      // Update Sidebar Badges
+      document.getElementById('badge-polls').textContent = polls.length;
+      document.getElementById('badge-pinboard').textContent = openPins.length;
+      document.getElementById('badge-schemes').textContent = schemes.length;
+      document.getElementById('badge-youth').textContent = youthPosts.length;
+      document.getElementById('badge-speakfree').textContent = anonPosts.length;
+      document.getElementById('badge-users').textContent = users.length || 1;
+
+      // 1. Update KPIs
+      document.getElementById('kpi-users').textContent = users.length || 1;
+      document.getElementById('kpi-users-sub').textContent = dist === "All Districts" ? "Across 28 Districts" : `In ${dist}`;
+      document.getElementById('kpi-polls').textContent = polls.length;
+      document.getElementById('kpi-votes-sub').textContent = `${votes.length} Total Votes Cast`;
+      document.getElementById('kpi-pins-open').textContent = openPins.length;
+      document.getElementById('kpi-pins-sub').textContent = `${critPins.length} Critical • ${resPins.length} Resolved`;
+      document.getElementById('kpi-schemes').textContent = schemes.length;
+      const totalDelayed = schemes.reduce((acc, s) => acc + Number(s.Audit_Delayed || 0) + Number(s.Audit_Unaware || 0), 0);
+      document.getElementById('kpi-schemes-sub').textContent = `${totalDelayed} Delay/Unaware Flags`;
+      document.getElementById('kpi-youth').textContent = youthPosts.length;
+      document.getElementById('kpi-anon').textContent = anonPosts.length;
+
+      // 2. Render 28-District Hotspot Table
+      const hotspotRows = ALL_28_DISTRICTS.map(dName => {
+        const dPins = rawData.posts.filter(p => p.Tool_Type === "pinboard" && p.District === dName);
+        const dOpen = dPins.filter(p => !String(p.GPS_Meta || '').includes('[RESOLVED]')).length;
+        const dRes = dPins.filter(p => String(p.GPS_Meta || '').includes('[RESOLVED]')).length;
+        const dAnon = rawData.posts.filter(p => p.Tool_Type === "speakfree" && p.District === dName).length;
+        const dYouth = rawData.posts.filter(p => p.Tool_Type === "youth" && p.District === dName).length;
+        const dVotes = rawData.votes.filter(v => v.District === dName).length;
+        const score = (dOpen * 3) + (dAnon * 2) + dYouth + dVotes;
+        return { dName, dOpen, dRes, dAnon, dYouth, dVotes, score };
+      }).sort((a, b) => b.score - a.score);
+
+      document.getElementById('hotspot-table-body').innerHTML = hotspotRows.map(r => `
+        <tr class="hover:bg-slate-800/60 transition">
+          <td class="py-2.5 px-2 font-bold text-white">${r.dName}</td>
+          <td class="py-2.5 px-2 text-center font-extrabold ${r.dOpen > 0 ? 'text-rose-400' : 'text-slate-500'}">${r.dOpen}</td>
+          <td class="py-2.5 px-2 text-center font-bold ${r.dRes > 0 ? 'text-emerald-400' : 'text-slate-500'}">${r.dRes}</td>
+          <td class="py-2.5 px-2 text-center font-bold ${r.dAnon > 0 ? 'text-purple-400' : 'text-slate-500'}">${r.dAnon}</td>
+          <td class="py-2.5 px-2 text-center font-bold ${r.dYouth > 0 ? 'text-sky-400' : 'text-slate-500'}">${r.dYouth}</td>
+          <td class="py-2.5 px-2 text-center font-bold text-emerald-400">${r.dVotes}</td>
+        </tr>
+      `).join('');
+
+      // 3. Top Polls Summary
+      const topPollsBox = document.getElementById('top-polls-summary');
+      if (polls.length === 0) {
+        topPollsBox.innerHTML = `<p class="text-xs text-slate-500">No polls recorded yet.</p>`;
+      } else {
+        const rankedPolls = polls.slice().map(p => {
+          const vCount = rawData.votes.filter(v => String(v.Poll_ID) === String(p.Poll_ID)).length;
+          return { ...p, vCount };
+        }).sort((a, b) => b.vCount - a.vCount).slice(0, 3);
+
+        topPollsBox.innerHTML = rankedPolls.map(p => `
+          <div onclick="selectAdminView('polls')" class="cursor-pointer bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2 transition">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-white truncate">${p.Question}</p>
+              <p class="text-[10px] text-slate-400">📍 ${p.Target_District}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-extrabold shrink-0">${p.vCount} Votes</span>
+          </div>
+        `).join('');
+      }
+
+      // 4. Top Schemes Summary
+      const topSchemesBox = document.getElementById('top-schemes-summary');
+      if (schemes.length === 0) {
+        topSchemesBox.innerHTML = `<p class="text-xs text-slate-500">No schemes in tracker yet.</p>`;
+      } else {
+        topSchemesBox.innerHTML = schemes.slice(0, 3).map(s => `
+          <div onclick="selectAdminView('schemes')" class="cursor-pointer bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2 transition">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-white truncate">${s.Title}</p>
+              <p class="text-[10px] text-slate-400">👍 ${s.Audit_Received || 0} Got It • ⚠️ ${s.Audit_Delayed || 0} Delayed • 📢 ${s.Audit_Unaware || 0} Unaware</p>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 shrink-0">${s.Category}</span>
+          </div>
+        `).join('');
+      }
+
+      renderQueue();
+    }
+
+    function switchQueueTab(tab) {
+      activeQueueTab = tab;
+      ['pinboard', 'polls', 'schemes', 'speakfree', 'youth', 'users'].forEach(t => {
+        const el = document.getElementById('qtab-' + t);
+        if (el) {
+          if (t === tab) {
+            el.className = "px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow";
+          } else {
+            el.className = "px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs";
+          }
+        }
+      });
+      renderQueue();
+    }
+
+    function parseOpt(rawStr) {
+      const str = String(rawStr || '');
+      const match = str.match(/\[IMG:(data:image\/[^\]]+)\]/);
+      if (match) {
+        return { label: str.replace(match[0], '').trim(), img: match[1] };
+      }
+      return { label: str.trim(), img: '' };
+    }
+
+    function cleanImgTag(str) {
+      return String(str || '').replace(/\[IMG:data:image\/[^\]]+\]/g, '').trim();
+    }
+
+    function renderQueue() {
+      const box = document.getElementById('queue-container');
+      const dist = document.getElementById('admin-dist-filter').value;
+
+      if (activeQueueTab === 'polls') {
+        const items = rawData.polls.filter(p => dist === "All Districts" || p.Target_District === dist || p.Target_District === "All Districts").slice().reverse();
+        if (items.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No polls found.</p>`; return; }
+        box.innerHTML = items.map(p => {
+          const pVotes = rawData.votes.filter(v => String(v.Poll_ID) === String(p.Poll_ID));
+          const total = pVotes.length;
+          const rawOpts = [p.Option_1, p.Option_2, p.Option_3, p.Option_4].filter(Boolean);
+          const optBreakdown = rawOpts.map((ro, idx) => {
+            const parsed = parseOpt(ro);
+            const c = pVotes.filter(v => Number(v.Option_Index) === idx).length;
+            const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+            return `<div class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2 text-xs">
+                      <span class="text-slate-200 truncate">${parsed.label}</span>
+                      <span class="text-emerald-400 font-extrabold shrink-0">${pct}% (${c})</span>
+                    </div>`;
+          }).join('');
+
+          return `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-emerald-400">📍 ${p.Target_District}</span>
+                    <span class="text-xs font-extrabold text-amber-400">• ${total} Total Votes</span>
+                  </div>
+                  <p class="text-sm md:text-base font-extrabold text-white mt-0.5">${p.Question}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="openEditPollAdmin('${p.Poll_ID}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-bold">✏️ Edit</button>
+                  <button onclick="modAction('deletePoll','${p.Poll_ID}')" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-800 text-rose-300 border border-rose-800 text-xs font-bold">🗑️ Delete</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${optBreakdown}</div>
+            </div>`;
+        }).join('');
+        return;
+      }
+
+      if (activeQueueTab === 'pinboard') {
+        const items = rawData.posts.filter(p => p.Tool_Type === 'pinboard' && (dist === "All Districts" || p.District === dist)).slice().reverse();
+        if (items.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No Pinboard ground reports found.</p>`; return; }
+        box.innerHTML = items.map(p => {
+          const isResolved = String(p.GPS_Meta || '').includes('[RESOLVED]');
+          return `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded ${isResolved ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-rose-950 text-rose-300 border border-rose-700'}">${isResolved ? '🟢 Resolved' : '🔴 Open'}</span>
+                  <span class="text-xs font-bold text-emerald-400">📍 ${p.District}</span>
+                  <span class="text-xs text-slate-400">• by <b>${p.Author_Username || '@Citizen'}</b></span>
+                </div>
+                <p class="text-xs font-bold text-white">${p.Category}</p>
+                <p class="text-xs text-slate-300">${cleanImgTag(p.Content)}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                ${!isResolved ? `<button onclick="modAction('resolvePost','${p.Post_ID}')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">✓ Mark Resolved</button>` : ''}
+                <button onclick="modAction('deletePost','${p.Post_ID}')" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-800 text-rose-300 border border-rose-800 text-xs font-bold">🗑️ Delete</button>
+              </div>
+            </div>`;
+        }).join('');
+        return;
+      }
+
+      if (activeQueueTab === 'schemes') {
+        const items = rawData.schemes.slice().reverse();
+        if (items.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No schemes found.</p>`; return; }
+        box.innerHTML = items.map(s => `
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <span class="text-[10px] font-bold text-amber-300 bg-amber-950 border border-amber-800 px-2 py-0.5 rounded">${s.Category} • 📍 ${s.Target_Districts}</span>
+              <p class="text-sm font-extrabold text-white">${s.Title}</p>
+              <p class="text-xs text-slate-300">${s.Description || ''}</p>
+              <p class="text-xs text-emerald-400 font-semibold pt-1">👍 ${s.Audit_Received || 0} Received • ⚠️ ${s.Audit_Delayed || 0} Delayed • 📢 ${s.Audit_Unaware || 0} Unaware</p>
+            </div>
+            <button onclick="modAction('deleteScheme','${s.Scheme_ID}')" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-800 text-rose-300 border border-rose-800 text-xs font-bold shrink-0">🗑️ Delete Scheme</button>
+          </div>
+        `).join('');
+        return;
+      }
+
+      if (activeQueueTab === 'speakfree' || activeQueueTab === 'youth') {
+        const items = rawData.posts.filter(p => p.Tool_Type === activeQueueTab && (dist === "All Districts" || p.District === dist)).slice().reverse();
+        if (items.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No posts found in this module.</p>`; return; }
+        box.innerHTML = items.map(p => `
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-emerald-400">📍 ${p.District}</span>
+                <span class="text-xs text-slate-400">• ${p.Category}</span>
+                <span class="text-xs text-amber-400 font-bold">• 👍 ${p.Upvotes || 1}</span>
+              </div>
+              <p class="text-xs text-slate-200">"${p.Content}"</p>
+            </div>
+            <button onclick="modAction('deletePost','${p.Post_ID}')" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-800 text-rose-300 border border-rose-800 text-xs font-bold shrink-0">🗑️ Delete</button>
+          </div>
+        `).join('');
+        return;
+      }
+
+      if (activeQueueTab === 'users') {
+        const users = rawData.users.filter(u => dist === "All Districts" || u.District === dist).slice().reverse();
+        if (users.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No registered users in this filter.</p>`; return; }
+        box.innerHTML = users.map(u => `
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">👤</div>
+              <div>
+                <p class="text-xs font-extrabold text-white">${u.Username || '@AP_Citizen'} <span class="text-slate-400 font-normal">(${u.Display_Name || 'Citizen'})</span></p>
+                <p class="text-[11px] text-emerald-400">📍 ${u.District || 'Itanagar Capital Complex'} • Encrypted ID: <span class="font-mono text-slate-500">${String(u.User_Hash || '').slice(0, 12)}...</span></p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${u.Role === 'Admin' ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${u.Role || 'Citizen'}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function modAction(modType, targetId) {
+      if (modType.startsWith('delete') && !confirm("Permanently delete this item from the platform and Google Sheet?")) return;
+
+      if (modType === 'resolvePost') {
+        const p = rawData.posts.find(x => String(x.Post_ID) === String(targetId));
+        if (p) p.GPS_Meta = (p.GPS_Meta || '') + ' • [RESOLVED]';
+      } else if (modType === 'deletePost') {
+        rawData.posts = rawData.posts.filter(x => String(x.Post_ID) !== String(targetId));
+      } else if (modType === 'deletePoll') {
+        rawData.polls = rawData.polls.filter(x => String(x.Poll_ID) !== String(targetId));
+      } else if (modType === 'deleteScheme') {
+        rawData.schemes = rawData.schemes.filter(x => String(x.Scheme_ID) !== String(targetId));
+      }
+
+      localStorage.setItem('apo_cache', JSON.stringify(rawData));
+      renderDashboard();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "adminMod", userHash: currentUser.userHash, adminPin: "2026", modType, targetId })
+        });
+      } catch (e) {}
+    }
+
+    function openQuickPollModal() {
+      editingPollId = null;
+      preservedImgs = { 1: "", 2: "", 3: "", 4: "" };
+      document.getElementById('qp-modal-title').textContent = "📊 Publish Official Poll";
+      document.getElementById('qp-submit-btn').textContent = "🚀 Publish Official Poll";
+      document.getElementById('qp-q').value = "";
+      document.getElementById('qp-o1').value = "";
+      document.getElementById('qp-o2').value = "";
+      document.getElementById('qp-o3').value = "";
+      document.getElementById('qp-o4').value = "";
+      document.getElementById('quick-poll-modal').classList.replace('hidden', 'flex');
+    }
+
+    function openEditPollAdmin(pollId) {
+      const poll = rawData.polls.find(p => String(p.Poll_ID) === String(pollId));
+      if (!poll) return;
+      editingPollId = String(poll.Poll_ID);
+      document.getElementById('qp-modal-title').textContent = "✏️ Edit Poll";
+      document.getElementById('qp-submit-btn').textContent = "💾 Save Poll Changes";
+      document.getElementById('qp-dist').value = poll.Target_District || "All Districts";
+      document.getElementById('qp-q').value = poll.Question || "";
+
+      [poll.Option_1, poll.Option_2, poll.Option_3, poll.Option_4].forEach((raw, i) => {
+        const slot = i + 1;
+        const parsed = parseOpt(raw);
+        document.getElementById('qp-o' + slot).value = parsed.label;
+        preservedImgs[slot] = parsed.img || "";
+      });
+
+      document.getElementById('quick-poll-modal').classList.replace('hidden', 'flex');
+    }
+
+    function openQuickSchemeModal() { document.getElementById('quick-scheme-modal').classList.replace('hidden', 'flex'); }
+
+    async function adminCreatePoll() {
+      const targetDistrict = document.getElementById('qp-dist').value;
+      const category = document.getElementById('qp-cat').value + " • by Official Admin";
+      const question = document.getElementById('qp-q').value.trim();
+      const t1 = document.getElementById('qp-o1').value.trim();
+      const t2 = document.getElementById('qp-o2').value.trim();
+      const t3 = document.getElementById('qp-o3').value.trim();
+      const t4 = document.getElementById('qp-o4').value.trim();
+
+      if (!question || !t1 || !t2) { alert("Enter question and at least 2 options."); return; }
+
+      const opt1 = t1 + (preservedImgs[1] ? ` [IMG:${preservedImgs[1]}]` : "");
+      const opt2 = t2 + (preservedImgs[2] ? ` [IMG:${preservedImgs[2]}]` : "");
+      const opt3 = t3 ? (t3 + (preservedImgs[3] ? ` [IMG:${preservedImgs[3]}]` : "")) : "";
+      const opt4 = t4 ? (t4 + (preservedImgs[4] ? ` [IMG:${preservedImgs[4]}]` : "")) : "";
+
+      const pollId = editingPollId || ("POLL_" + Date.now());
+      const pollObj = { Poll_ID: pollId, Target_District: targetDistrict, Category_Badge: category, Question: question, Option_1: opt1, Option_2: opt2, Option_3: opt3, Option_4: opt4 };
+
+      const existingIdx = rawData.polls.findIndex(p => String(p.Poll_ID) === String(pollId));
+      if (existingIdx !== -1) {
+        rawData.polls[existingIdx] = pollObj;
+      } else {
+        rawData.polls.push(pollObj);
+      }
+
+      localStorage.setItem('apo_cache', JSON.stringify(rawData));
+      document.getElementById('quick-poll-modal').classList.replace('flex', 'hidden');
+      renderDashboard();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "createPoll", pollId, userHash: currentUser.userHash, adminPin: "2026", targetDistrict, category, question, opt1, opt2, opt3, opt4 })
+        });
+      } catch (e) {}
+    }
+
+    async function adminCreateScheme() {
+      const targetDistricts = document.getElementById('qs-dist').value;
+      const category = document.getElementById('qs-cat').value;
+      const title = document.getElementById('qs-title').value.trim();
+      const description = document.getElementById('qs-desc').value.trim();
+
+      if (!title || !description) { alert("Please enter scheme title and details."); return; }
+
+      rawData.schemes.push({ Scheme_ID: "SCH_" + Date.now(), Target_Districts: targetDistricts, Category: category, Title: title, Description: description, Audit_Received: 0, Audit_Delayed: 0, Audit_Unaware: 0 });
+      localStorage.setItem('apo_cache', JSON.stringify(rawData));
+      document.getElementById('quick-scheme-modal').classList.replace('flex', 'hidden');
+      renderDashboard();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "createScheme", userHash: currentUser.userHash, adminPin: "2026", targetDistricts, category, title, description })
+        });
+      } catch (e) {}
+    }
+
+    function exportOfficialCSV() {
+      const rows = [
+        ["District", "Open_Pinboard_Issues", "Resolved_Issues", "SpeakFree_Reports", "Youth_Posts", "Total_Votes_Cast"]
+      ];
+      ALL_28_DISTRICTS.forEach(dName => {
+        const dPins = rawData.posts.filter(p => p.Tool_Type === "pinboard" && p.District === dName);
+        const dOpen = dPins.filter(p => !String(p.GPS_Meta || '').includes('[RESOLVED]')).length;
+        const dRes = dPins.filter(p => String(p.GPS_Meta || '').includes('[RESOLVED]')).length;
+        const dAnon = rawData.posts.filter(p => p.Tool_Type === "speakfree" && p.District === dName).length;
+        const dYouth = rawData.posts.filter(p => p.Tool_Type === "youth" && p.District === dName).length;
+        const dVotes = rawData.votes.filter(v => v.District === dName).length;
+        rows.push([`"${dName}"`, dOpen, dRes, dAnon, dYouth, dVotes]);
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Arunachal_Civic_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function logout() {
+      if (confirm("Switch user or log out?")) {
+        localStorage.removeItem('apo_user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    initSidebar();
+    syncAdminData(false);
+  </script>
+</body>
+</html>

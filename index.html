@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Public Polling | Arunachal Peoples Opinion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('apo_user') || 'null');
+    if (!currentUser || !currentUser.userHash) {
+      window.location.replace('login.html');
+    }
+  </script>
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-slate-800 p-0.5 border border-slate-700" onerror="this.style.display='none'" />
+      <h1 class="font-extrabold text-sm text-white">Public Polling</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="syncLive(true)" class="p-2 rounded-lg bg-slate-800 text-slate-200 text-xs">🔄</button>
+      <button onclick="openCreatePollModal()" class="px-2.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-extrabold">+ Create Poll</button>
+      <a href="profile.html" class="flex items-center pl-1">
+        <img id="mob-avatar" src="" class="w-8 h-8 rounded-lg object-cover bg-slate-800 border border-emerald-500" />
+      </a>
+    </div>
+  </header>
+
+  <!-- Desktop Left Sidebar -->
+  <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
+    <div>
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-slate-700" onerror="this.style.display='none'" />
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
+          <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">Arunachal Pradesh</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5">
+        <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow"><span>📊</span> Public Polling</a>
+        <a href="pinboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📍</span> Geo-Pinboard</a>
+        <a href="tracker.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🏛️</span> Scheme Tracker</a>
+        <a href="youth.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🎓</span> Youth Portal</a>
+        <a href="speakfree.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🔒</span> Speak Free</a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-800 bg-slate-900/60 space-y-3">
+      <div class="flex items-center gap-3">
+        <img id="side-avatar" src="" class="w-10 h-10 rounded-xl object-cover bg-slate-800 border border-emerald-500" />
+        <div class="overflow-hidden">
+          <p id="side-username" class="text-xs font-extrabold text-white truncate"></p>
+          <p id="side-role" class="text-[11px] text-emerald-400 font-semibold truncate"></p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <a href="profile.html" class="flex-1 py-2 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-slate-200 transition">Profile</a>
+        <button onclick="logout()" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 text-xs font-bold text-slate-300 hover:text-white transition">Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-3.5 md:p-8 overflow-y-auto">
+    <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
+
+      <!-- Header & Filter Bar -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl md:text-3xl font-extrabold text-white">District & Colony Public Polling</h2>
+          <p class="text-xs md:text-sm text-slate-400">Vote on district priorities, change your vote up to 3 times if needed, and share polls with your community.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="syncLive(true)" id="sync-btn" class="hidden md:inline-flex px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition">
+            🔄 Sync
+          </button>
+          <button onclick="filterMyDistrict()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-800/80 text-xs font-bold text-emerald-400 transition">
+            📍 My District
+          </button>
+          <select id="district-select" onchange="syncDistrict(this.value)" class="flex-1 sm:flex-none bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs md:text-sm text-white focus:border-emerald-500 focus:outline-none">
+            <option value="All Districts">🌎 All 28 Districts</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+          <button onclick="openCreatePollModal()" class="hidden md:inline-flex px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg transition">
+            + Create Poll
+          </button>
+        </div>
+      </div>
+
+      <!-- Polls Grid -->
+      <div id="polls-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-start"></div>
+
+    </div>
+  </main>
+
+  <!-- Create / Edit Public Poll Modal -->
+  <div id="poll-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-start sm:items-center justify-center p-3 overflow-y-auto z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl my-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h3 id="modal-poll-title" class="text-base font-extrabold text-white">📊 Create Public Poll</h3>
+          <p class="text-[11px] text-slate-400">Add 2 to 4 options. Tap 📷 to upload or replace a photo, or ✕ to remove it.</p>
+        </div>
+        <button onclick="closePollModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div id="profanity-alert" class="hidden bg-rose-950/90 border border-rose-600 rounded-xl p-3 text-xs text-rose-200 font-bold"></div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">District</label>
+          <select id="new-poll-dist" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+            <option value="All Districts">All Districts (State-Wide)</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-300 font-semibold">Category</label>
+          <select id="new-poll-cat" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+            <option value="MLA / Leadership Poll">🏛️ MLA / Leadership Poll</option>
+            <option value="Colony / Local Election">🗳️ Colony / Local Election</option>
+            <option value="Infrastructure Priority">🛣️ Infrastructure Priority</option>
+            <option value="State Policy & Governance">📜 State Policy & Governance</option>
+            <option value="Community & Lifestyle">🍎 Community & Lifestyle</option>
+            <option value="Youth & Education">🎓 Youth & Education</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300 font-semibold">Poll Question</label>
+        <input id="new-poll-q" type="text" placeholder="e.g., Who is the ideal MLA candidate for our constituency?" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none" />
+      </div>
+
+      <div class="space-y-2.5">
+        <label class="text-xs text-slate-300 font-semibold">Poll Options (2 required, up to 4 — tap 📷 to add/replace photo)</label>
+
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
+          <label class="cursor-pointer shrink-0 w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-500 flex items-center justify-center overflow-hidden relative group">
+            <img id="prev-o1" class="hidden w-full h-full object-cover" />
+            <span id="icon-o1" class="text-xs text-slate-400 group-hover:text-emerald-400">📷</span>
+            <input type="file" accept="image/*" class="hidden" onchange="compressOptionImg(event, 1)" />
+          </label>
+          <input id="new-poll-o1" type="text" placeholder="Option / Candidate 1 (Required)" class="flex-1 bg-transparent text-xs text-white focus:outline-none px-1" />
+          <button type="button" id="clr-o1" onclick="clearOptionImg(1)" class="hidden text-xs font-bold text-rose-400 hover:text-rose-300 px-1.5">✕</button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
+          <label class="cursor-pointer shrink-0 w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-500 flex items-center justify-center overflow-hidden relative group">
+            <img id="prev-o2" class="hidden w-full h-full object-cover" />
+            <span id="icon-o2" class="text-xs text-slate-400 group-hover:text-emerald-400">📷</span>
+            <input type="file" accept="image/*" class="hidden" onchange="compressOptionImg(event, 2)" />
+          </label>
+          <input id="new-poll-o2" type="text" placeholder="Option / Candidate 2 (Required)" class="flex-1 bg-transparent text-xs text-white focus:outline-none px-1" />
+          <button type="button" id="clr-o2" onclick="clearOptionImg(2)" class="hidden text-xs font-bold text-rose-400 hover:text-rose-300 px-1.5">✕</button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
+          <label class="cursor-pointer shrink-0 w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-500 flex items-center justify-center overflow-hidden relative group">
+            <img id="prev-o3" class="hidden w-full h-full object-cover" />
+            <span id="icon-o3" class="text-xs text-slate-400 group-hover:text-emerald-400">📷</span>
+            <input type="file" accept="image/*" class="hidden" onchange="compressOptionImg(event, 3)" />
+          </label>
+          <input id="new-poll-o3" type="text" placeholder="Option / Candidate 3 (Optional)" class="flex-1 bg-transparent text-xs text-white focus:outline-none px-1" />
+          <button type="button" id="clr-o3" onclick="clearOptionImg(3)" class="hidden text-xs font-bold text-rose-400 hover:text-rose-300 px-1.5">✕</button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
+          <label class="cursor-pointer shrink-0 w-11 h-11 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-500 flex items-center justify-center overflow-hidden relative group">
+            <img id="prev-o4" class="hidden w-full h-full object-cover" />
+            <span id="icon-o4" class="text-xs text-slate-400 group-hover:text-emerald-400">📷</span>
+            <input type="file" accept="image/*" class="hidden" onchange="compressOptionImg(event, 4)" />
+          </label>
+          <input id="new-poll-o4" type="text" placeholder="Option / Candidate 4 (Optional)" class="flex-1 bg-transparent text-xs text-white focus:outline-none px-1" />
+          <button type="button" id="clr-o4" onclick="clearOptionImg(4)" class="hidden text-xs font-bold text-rose-400 hover:text-rose-300 px-1.5">✕</button>
+        </div>
+      </div>
+
+      <button onclick="publishPoll()" id="pub-poll-btn" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg transition">
+        🚀 Publish Poll
+      </button>
+    </div>
+  </div>
+
+  <!-- Universal Social Share Modal -->
+  <div id="share-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold text-white">🔗 Share to Social Media</h3>
+        <button onclick="closeShareModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p id="share-preview" class="text-xs text-slate-300 bg-slate-950 border border-slate-800 rounded-xl p-3 line-clamp-4 whitespace-pre-line"></p>
+      <div class="grid grid-cols-2 gap-2.5 text-xs font-bold">
+        <a id="sh-wa" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-center">🟢 WhatsApp</a>
+        <a id="sh-tw" target="_blank" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-center border border-slate-700">⚫ X / Twitter</a>
+        <a id="sh-tg" target="_blank" class="py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-center">✈️ Telegram</a>
+        <a id="sh-fb" target="_blank" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-center">🔵 Facebook</a>
+      </div>
+      <button onclick="copyShareText()" id="sh-copy-btn" class="w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 transition">
+        📋 Copy Text for Instagram / SMS
+      </button>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="img-lightbox" onclick="this.classList.replace('flex','hidden')" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-50 cursor-pointer">
+    <div class="max-w-md w-full space-y-2 text-center">
+      <img id="lightbox-pic" src="" class="w-full max-h-[75vh] object-contain rounded-2xl border border-slate-700 mx-auto" />
+      <p id="lightbox-caption" class="text-sm font-bold text-white"></p>
+      <p class="text-xs text-slate-400">Tap anywhere to close</p>
+    </div>
+  </div>
+
+  <!-- Mobile Fixed 5-Tab Bottom Bar -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 grid grid-cols-5 z-50 text-[10px] font-bold">
+    <a href="index.html" class="flex flex-col items-center justify-center py-2.5 text-emerald-400"><span>📊</span><span>Polls</span></a>
+    <a href="pinboard.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📍</span><span>Pinboard</span></a>
+    <a href="tracker.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🏛️</span><span>Schemes</span></a>
+    <a href="youth.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🎓</span><span>Youth</span></a>
+    <a href="speakfree.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🔒</span><span>Speak Free</span></a>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBBlj3H08CzWrEmvXF4RB_MIYtBC2JTXi-bPZXlmUcei_mOFuKXJh83io82sDAgzkxmA/exec";
+
+    const USER_VOTE_KEY = "apo_votes_" + currentUser.userHash;
+    const USER_CHANGES_KEY = "apo_vote_changes_" + currentUser.userHash;
+    const USER_REPORT_KEY = "apo_rep_" + currentUser.userHash;
+    const MAX_VOTE_CHANGES = 3;
+
+    localStorage.removeItem('apo_my_votes');
+
+    const DEFAULT_POLLS = [
+      {
+        Poll_ID: "POLL_102", Target_District: "Itanagar Capital Complex", Category_Badge: "Colony / Local Election",
+        Question: "Who should be elected Colony Welfare Leader for Sector-B (2026–27)?",
+        Option_1: "Candidate A: Tashi Dorjee (Youth & Sanitation Focus)",
+        Option_2: "Candidate B: Koj Rinya (Road & Security Focus)", Option_3: "", Option_4: ""
+      },
+      {
+        Poll_ID: "POLL_101", Target_District: "All Districts", Category_Badge: "Infrastructure Priority",
+        Question: "What should be the #1 budget priority for your district in 2026–27?",
+        Option_1: "All-Weather Highway & Village Road Maintenance",
+        Option_2: "24x7 District Hospital & Tele-Medicine Upgrade",
+        Option_3: "Government School Smart Classrooms & Safety Audit",
+        Option_4: "Town Drainage & Solar Street Lighting"
+      }
+    ];
+
+    const BANNED_WORDS = [
+      "fuck", "fucker", "fucking", "motherfucker", "shit", "bitch", "bastard", "asshole", "dick",
+      "pussy", "cunt", "whore", "slut", "porn", "sex", "nude", "naked", "rape", "rapist",
+      "kill", "murder", "terrorist", "bomb", "suicide", "chutiya", "madarchod", "bhenchod",
+      "bhosdike", "gandu", "randi", "harami", "kamina", "sala", "kutte", "mc", "bc"
+    ];
+
+    let allPolls = [];
+    let allVotes = [];
+    let currentFilter = "All Districts";
+    let editingPollId = null;
+    let optionImages = { 1: "", 2: "", 3: "", 4: "" };
+    let activeShareText = "";
+
+    function initSidebar() {
+      const av = currentUser.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(currentUser.username)}`;
+      document.getElementById('side-username').textContent = currentUser.username;
+      document.getElementById('side-role').textContent = `${currentUser.role || 'Citizen'} • ${currentUser.district || 'AP'}`;
+      document.getElementById('side-avatar').src = av;
+      document.getElementById('mob-avatar').src = av;
+      if (currentUser.district) {
+        document.getElementById('new-poll-dist').value = currentUser.district;
+      }
+    }
+
+    function shareItem(title, bodyText) {
+      const fullText = `📊 *${title}*\n${bodyText}\n\n— Shared via *Arunachal Peoples Opinion*`;
+      activeShareText = fullText;
+      if (navigator.share && window.location.protocol.startsWith('http')) {
+        navigator.share({ title, text: fullText, url: window.location.href }).catch(() => openShareModal(fullText));
+      } else {
+        openShareModal(fullText);
+      }
+    }
+
+    function openShareModal(text) {
+      document.getElementById('share-preview').textContent = text;
+      const enc = encodeURIComponent(text);
+      document.getElementById('sh-wa').href = `https://wa.me/?text=${enc}`;
+      document.getElementById('sh-tw').href = `https://twitter.com/intent/tweet?text=${enc}`;
+      document.getElementById('sh-tg').href = `https://t.me/share/url?url=${encodeURIComponent('https://arunachalopinion.in')}&text=${enc}`;
+      document.getElementById('sh-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://arunachalopinion.in')}&quote=${enc}`;
+      document.getElementById('sh-copy-btn').textContent = "📋 Copy Text for Instagram / SMS";
+      document.getElementById('share-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-modal').classList.replace('flex', 'hidden');
+    }
+
+    function copyShareText() {
+      navigator.clipboard.writeText(activeShareText);
+      document.getElementById('sh-copy-btn').textContent = "✓ Copied to Clipboard!";
+    }
+
+    function resetPollForm() {
+      editingPollId = null;
+      document.getElementById('modal-poll-title').textContent = "📊 Create Public Poll";
+      document.getElementById('pub-poll-btn').textContent = "🚀 Publish Poll";
+      document.getElementById('profanity-alert').classList.add('hidden');
+      document.getElementById('new-poll-q').value = '';
+      if (currentUser.district) document.getElementById('new-poll-dist').value = currentUser.district;
+      [1, 2, 3, 4].forEach(slot => {
+        document.getElementById('new-poll-o' + slot).value = '';
+        clearOptionImg(slot);
+      });
+    }
+
+    function openCreatePollModal() {
+      resetPollForm();
+      document.getElementById('poll-modal').classList.replace('hidden', 'flex');
+    }
+
+    function openEditPollModal(pollId) {
+      const poll = allPolls.find(p => String(p.Poll_ID) === String(pollId));
+      if (!poll) return;
+
+      resetPollForm();
+      editingPollId = String(poll.Poll_ID);
+      document.getElementById('modal-poll-title').textContent = "✏️ Edit Your Poll";
+      document.getElementById('pub-poll-btn').textContent = "💾 Save Changes";
+
+      document.getElementById('new-poll-dist').value = poll.Target_District || "All Districts";
+      const { badge } = parseCategoryAndAuthor(poll.Category_Badge);
+      const catSelect = document.getElementById('new-poll-cat');
+      Array.from(catSelect.options).forEach(opt => {
+        if (opt.value === badge) catSelect.value = badge;
+      });
+
+      document.getElementById('new-poll-q').value = poll.Question || '';
+
+      const rawOpts = [poll.Option_1, poll.Option_2, poll.Option_3, poll.Option_4];
+      rawOpts.forEach((raw, idx) => {
+        const slot = idx + 1;
+        const parsed = parseOptionData(raw);
+        document.getElementById('new-poll-o' + slot).value = parsed.label;
+        if (parsed.img) {
+          optionImages[slot] = parsed.img;
+          const prev = document.getElementById('prev-o' + slot);
+          prev.src = parsed.img;
+          prev.classList.remove('hidden');
+          document.getElementById('icon-o' + slot).classList.add('hidden');
+          document.getElementById('clr-o' + slot).classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('poll-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closePollModal() {
+      document.getElementById('poll-modal').classList.replace('flex', 'hidden');
+    }
+
+    function showLightbox(imgSrc, caption, event) {
+      if (event) event.stopPropagation();
+      document.getElementById('lightbox-pic').src = imgSrc;
+      document.getElementById('lightbox-caption').textContent = caption;
+      document.getElementById('img-lightbox').classList.replace('hidden', 'flex');
+    }
+
+    function compressOptionImg(event, slot) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const size = 140;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+          optionImages[slot] = dataUrl;
+
+          const prev = document.getElementById('prev-o' + slot);
+          prev.src = dataUrl;
+          prev.classList.remove('hidden');
+          document.getElementById('icon-o' + slot).classList.add('hidden');
+          document.getElementById('clr-o' + slot).classList.remove('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearOptionImg(slot) {
+      optionImages[slot] = "";
+      const prev = document.getElementById('prev-o' + slot);
+      prev.src = "";
+      prev.classList.add('hidden');
+      document.getElementById('icon-o' + slot).classList.remove('hidden');
+      document.getElementById('clr-o' + slot).classList.add('hidden');
+    }
+
+    function containsBadWords(text) {
+      if (!text) return false;
+      const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+      const words = normalized.split(/\s+/);
+      for (const bad of BANNED_WORDS) {
+        if (words.includes(bad)) return bad;
+        if (bad.length >= 4 && normalized.replace(/\s+/g, '').includes(bad)) return bad;
+      }
+      return null;
+    }
+
+    function mergeLocalAndServerPolls(serverPolls) {
+      const localCreated = JSON.parse(localStorage.getItem('apo_local_polls') || '[]');
+      const map = new Map();
+      (serverPolls || []).slice().reverse().forEach(p => map.set(String(p.Poll_ID), p));
+      localCreated.forEach(p => map.set(String(p.Poll_ID), p));
+      const combined = Array.from(map.values());
+      return combined.length > 0 ? combined : DEFAULT_POLLS;
+    }
+
+    async function syncLive(showSpinner) {
+      const btn = document.getElementById('sync-btn');
+      if (showSpinner && btn) btn.textContent = "⏳...";
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (allPolls.length === 0) {
+        allPolls = mergeLocalAndServerPolls(cached ? cached.polls : []);
+        allVotes = (cached && cached.votes) ? cached.votes : [];
+        renderPolls();
+      }
+
+      try {
+        const res = await fetch(API_URL + "?action=getAllData");
+        const data = await res.json();
+        if (data && data.ok) {
+          allPolls = mergeLocalAndServerPolls(data.polls);
+          allVotes = data.votes || [];
+          data.polls = allPolls.slice().reverse();
+          localStorage.setItem('apo_cache', JSON.stringify(data));
+          renderPolls();
+        }
+      } catch (e) {}
+
+      if (btn) btn.textContent = "🔄 Sync";
+    }
+
+    function parseOptionData(rawStr) {
+      const str = String(rawStr || '');
+      const match = str.match(/\[IMG:(data:image\/[^\]]+)\]/);
+      if (match) {
+        return {
+          label: str.replace(match[0], '').trim(),
+          img: match[1]
+        };
+      }
+      return { label: str.trim(), img: '' };
+    }
+
+    function parseCategoryAndAuthor(rawCat) {
+      const str = String(rawCat || 'Public Poll');
+      const tagMatch = str.match(/\[TAG:([^\]]+)\]/);
+      const cleanStr = str.replace(/\[TAG:[^\]]+\]/, '').trim();
+      const parts = cleanStr.split(' • by ');
+      return {
+        badge: parts[0],
+        author: parts[1] || '',
+        authorTag: tagMatch ? tagMatch[1] : ''
+      };
+    }
+
+    function renderPolls() {
+      const box = document.getElementById('polls-container');
+      const localVotes = JSON.parse(localStorage.getItem(USER_VOTE_KEY) || '{}');
+      const voteChanges = JSON.parse(localStorage.getItem(USER_CHANGES_KEY) || '{}');
+      const hiddenPolls = JSON.parse(localStorage.getItem(USER_REPORT_KEY) || '{}');
+      const myTag = String(currentUser.userHash).slice(-8);
+
+      const filtered = allPolls.filter(p =>
+        !hiddenPolls[p.Poll_ID] &&
+        (currentFilter === "All Districts" ||
+         p.Target_District === "All Districts" ||
+         p.Target_District === currentFilter)
+      );
+
+      if (filtered.length === 0) {
+        box.innerHTML = `<div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-xs text-slate-400">No polls found for ${currentFilter}. Click <b>+ Create Poll</b> to start one!</div>`;
+        return;
+      }
+
+      box.innerHTML = filtered.map(poll => {
+        const rawOpts = [poll.Option_1, poll.Option_2, poll.Option_3, poll.Option_4].filter(Boolean);
+        const parsedOpts = rawOpts.map(parseOptionData);
+        const hasAnyPhotos = parsedOpts.some(o => o.img !== '');
+
+        const pVotes = allVotes.filter(v => String(v.Poll_ID) === String(poll.Poll_ID));
+        const total = pVotes.length;
+
+        const serverVote = pVotes.find(v => String(v.Voter_Hash) === String(currentUser.userHash));
+        const myChosenIdx = localVotes[poll.Poll_ID] !== undefined
+          ? Number(localVotes[poll.Poll_ID])
+          : (serverVote !== undefined ? Number(serverVote.Option_Index) : -1);
+        const hasVoted = myChosenIdx !== -1;
+
+        const usedChanges = Number(voteChanges[poll.Poll_ID] || 0);
+        const remainingChanges = Math.max(0, MAX_VOTE_CHANGES - usedChanges);
+
+        const { badge, author, authorTag } = parseCategoryAndAuthor(poll.Category_Badge);
+        const isOwner = (currentUser.role === "Admin") ||
+                        (poll.Creator_Hash && poll.Creator_Hash === currentUser.userHash) ||
+                        (authorTag && authorTag === myTag) ||
+                        (author && author === currentUser.username);
+
+        const optHtml = parsedOpts.map((opt, idx) => {
+          const count = pVotes.filter(v => Number(v.Option_Index) === idx).length;
+          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+          const isMyPick = (myChosenIdx === idx);
+          const safeLabel = opt.label.replace(/'/g, '');
+
+          if (hasAnyPhotos) {
+            return `
+              <div onclick="vote('${poll.Poll_ID}', ${idx})" class="cursor-pointer w-full text-left p-3 rounded-xl border transition flex items-center gap-3 ${isMyPick ? 'bg-emerald-950/50 border-emerald-500 shadow' : 'bg-slate-950 hover:bg-slate-800/80 border-slate-800'}">
+                ${opt.img
+                  ? `<img src="${opt.img}" onclick="showLightbox('${opt.img}', '${safeLabel}', event)" class="w-14 h-14 rounded-xl object-cover border border-slate-700 shrink-0 hover:scale-105 transition" title="Tap to enlarge photo" />`
+                  : `<div class="w-14 h-14 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-sm font-extrabold text-emerald-400 shrink-0">#${idx + 1}</div>`
+                }
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-center text-xs font-bold mb-1.5 gap-2">
+                    <span class="text-slate-100 truncate flex items-center gap-1.5">
+                      <span class="truncate">${opt.label}</span>
+                      ${isMyPick ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-extrabold shrink-0">✓ Voted</span>` : ''}
+                    </span>
+                    <span class="text-emerald-400 font-extrabold shrink-0">${pct}% (${count})</span>
+                  </div>
+                  <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div class="${isMyPick ? 'bg-emerald-400' : 'bg-emerald-600'} h-full transition-all duration-300" style="width: ${pct}%"></div>
+                  </div>
+                </div>
+              </div>`;
+          }
+
+          return `
+            <button onclick="vote('${poll.Poll_ID}', ${idx})" class="w-full text-left p-3.5 rounded-xl border transition ${isMyPick ? 'bg-emerald-950/50 border-emerald-500 shadow' : 'bg-slate-950 hover:bg-slate-800/80 border-slate-800'}">
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5 gap-2">
+                <span class="text-slate-100 flex flex-wrap items-center gap-1.5">
+                  <span>${opt.label}</span>
+                  ${isMyPick ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-extrabold">✓ Voted</span>` : ''}
+                </span>
+                <span class="text-emerald-400 font-extrabold shrink-0">${pct}% (${count})</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="${isMyPick ? 'bg-emerald-400' : 'bg-emerald-600'} h-full transition-all duration-300" style="width: ${pct}%"></div>
+              </div>
+            </button>`;
+        }).join('');
+
+        const safeQuestion = String(poll.Question || '').replace(/'/g, "\\'");
+        const shareSummary = parsedOpts.map((o, i) => `${i + 1}. ${o.label}`).join('\\n');
+
+        const ownerActions = isOwner
+          ? `<button onclick="openEditPollModal('${poll.Poll_ID}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-amber-400 transition">✏️ Edit</button>
+             <button onclick="deletePoll('${poll.Poll_ID}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-950 text-[11px] font-bold text-rose-400 transition">🗑️</button>`
+          : `<button onclick="reportPoll('${poll.Poll_ID}')" class="text-[11px] text-slate-500 hover:text-rose-400" title="Report poll">🚩</button>`;
+
+        const changeBadge = hasVoted
+          ? (remainingChanges > 0
+              ? `<span class="text-[11px] text-amber-400 font-semibold">🔄 ${remainingChanges} vote change${remainingChanges > 1 ? 's' : ''} left</span>`
+              : `<span class="text-[11px] text-rose-400 font-bold">🔒 Final Vote Locked</span>`)
+          : `<span class="text-[11px] text-slate-500">Tap any option to vote</span>`;
+
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 space-y-3.5 shadow-lg flex flex-col justify-between">
+            <div class="space-y-2.5">
+              <div class="flex flex-wrap justify-between items-center gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] font-bold uppercase px-2.5 py-0.5 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800">${badge}</span>
+                  <span class="text-xs font-semibold text-slate-400">📍 ${poll.Target_District}</span>
+                  ${author ? `<span class="text-[11px] text-slate-400">• by <b class="text-slate-300">${author}</b></span>` : ''}
+                </div>
+                <span class="text-xs font-bold ${hasVoted ? 'text-emerald-400' : 'text-slate-400'}">${total} Votes</span>
+              </div>
+              <h3 class="font-extrabold text-base md:text-lg text-white leading-snug">${poll.Question}</h3>
+            </div>
+
+            <div class="space-y-2 pt-1">${optHtml}</div>
+
+            <!-- Footer Bar: Vote Change Counter + Share Button + Edit/Delete -->
+            <div class="flex items-center justify-between pt-2.5 border-t border-slate-800/80 gap-2">
+              ${changeBadge}
+              <div class="flex items-center gap-1.5">
+                <button onclick="shareItem('${safeQuestion}', '📍 District: ${poll.Target_District}\\n\\nOptions:\\n${shareSummary}')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-[11px] font-bold text-emerald-400 transition">
+                  🔗 Share
+                </button>
+                ${ownerActions}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function vote(pollId, optionIndex) {
+      const localVotes = JSON.parse(localStorage.getItem(USER_VOTE_KEY) || '{}');
+      const voteChanges = JSON.parse(localStorage.getItem(USER_CHANGES_KEY) || '{}');
+
+      const existingIdx = allVotes.findIndex(v => String(v.Poll_ID) === String(pollId) && String(v.Voter_Hash) === String(currentUser.userHash));
+      const currentChosen = localVotes[pollId] !== undefined
+        ? Number(localVotes[pollId])
+        : (existingIdx !== -1 ? Number(allVotes[existingIdx].Option_Index) : -1);
+
+      if (currentChosen === optionIndex) {
+        return;
+      }
+
+      if (currentChosen !== -1) {
+        const usedChanges = Number(voteChanges[pollId] || 0);
+        if (usedChanges >= MAX_VOTE_CHANGES) {
+          alert("🔒 Final Vote Locked: You have used all 3 chances to change your vote in this poll.");
+          return;
+        }
+        voteChanges[pollId] = usedChanges + 1;
+        localStorage.setItem(USER_CHANGES_KEY, JSON.stringify(voteChanges));
+      }
+
+      localVotes[pollId] = optionIndex;
+      localStorage.setItem(USER_VOTE_KEY, JSON.stringify(localVotes));
+
+      if (existingIdx !== -1) {
+        allVotes[existingIdx].Option_Index = optionIndex;
+      } else {
+        allVotes.push({ Poll_ID: pollId, Voter_Hash: currentUser.userHash, Option_Index: optionIndex });
+      }
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || '{}');
+      cached.votes = allVotes;
+      localStorage.setItem('apo_cache', JSON.stringify(cached));
+
+      renderPolls();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "castVote",
+            pollId,
+            userHash: currentUser.userHash,
+            district: currentUser.district,
+            optionIndex
+          })
+        });
+      } catch (e) {}
+    }
+
+    async function publishPoll() {
+      const alertBox = document.getElementById('profanity-alert');
+      alertBox.classList.add('hidden');
+
+      const targetDistrict = document.getElementById('new-poll-dist').value;
+      const rawCat = document.getElementById('new-poll-cat').value;
+      const question = document.getElementById('new-poll-q').value.trim();
+      const t1 = document.getElementById('new-poll-o1').value.trim();
+      const t2 = document.getElementById('new-poll-o2').value.trim();
+      const t3 = document.getElementById('new-poll-o3').value.trim();
+      const t4 = document.getElementById('new-poll-o4').value.trim();
+
+      if (!question || !t1 || !t2) {
+        alertBox.textContent = "⚠️ Please enter a Poll Question and at least Option 1 and Option 2.";
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      const combinedText = `${question} ${t1} ${t2} ${t3} ${t4}`;
+      const badFound = containsBadWords(combinedText);
+      if (badFound) {
+        alertBox.textContent = `⚠️ Poll Blocked: Offensive, vulgar, or harmful language is not allowed.`;
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      const opt1 = t1 + (optionImages[1] ? ` [IMG:${optionImages[1]}]` : "");
+      const opt2 = t2 + (optionImages[2] ? ` [IMG:${optionImages[2]}]` : "");
+      const opt3 = t3 ? (t3 + (optionImages[3] ? ` [IMG:${optionImages[3]}]` : "")) : "";
+      const opt4 = t4 ? (t4 + (optionImages[4] ? ` [IMG:${optionImages[4]}]` : "")) : "";
+
+      const myTag = String(currentUser.userHash).slice(-8);
+      const category = `${rawCat} • by ${currentUser.username || '@AP_Citizen'} [TAG:${myTag}]`;
+      const pollId = editingPollId || ("POLL_" + Date.now());
+
+      const pollObj = {
+        Poll_ID: pollId,
+        Creator_Hash: currentUser.userHash,
+        Target_District: targetDistrict,
+        Category_Badge: category,
+        Question: question,
+        Option_1: opt1,
+        Option_2: opt2,
+        Option_3: opt3,
+        Option_4: opt4,
+        Created_At: new Date().toISOString()
+      };
+
+      let localCreated = JSON.parse(localStorage.getItem('apo_local_polls') || '[]');
+      const existingLocalIdx = localCreated.findIndex(p => String(p.Poll_ID) === String(pollId));
+      if (existingLocalIdx !== -1) {
+        localCreated[existingLocalIdx] = pollObj;
+      } else {
+        localCreated.unshift(pollObj);
+      }
+      localStorage.setItem('apo_local_polls', JSON.stringify(localCreated));
+
+      const existingIdx = allPolls.findIndex(p => String(p.Poll_ID) === String(pollId));
+      if (existingIdx !== -1) {
+        allPolls[existingIdx] = pollObj;
+      } else {
+        allPolls.unshift(pollObj);
+      }
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || '{}');
+      cached.polls = allPolls.slice().reverse();
+      localStorage.setItem('apo_cache', JSON.stringify(cached));
+
+      renderPolls();
+      closePollModal();
+      resetPollForm();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "createPoll",
+            pollId,
+            userHash: currentUser.userHash,
+            adminPin: "2026",
+            targetDistrict, category, question, opt1, opt2, opt3, opt4
+          })
+        });
+      } catch (e) {}
+    }
+
+    function reportPoll(pollId) {
+      if (!confirm("Report and hide this poll for offensive or inappropriate content?")) return;
+      const hiddenPolls = JSON.parse(localStorage.getItem(USER_REPORT_KEY) || '{}');
+      hiddenPolls[pollId] = true;
+      localStorage.setItem(USER_REPORT_KEY, JSON.stringify(hiddenPolls));
+      renderPolls();
+    }
+
+    async function deletePoll(pollId) {
+      if (!confirm("Delete this poll permanently?")) return;
+      allPolls = allPolls.filter(p => String(p.Poll_ID) !== String(pollId));
+      const localCreated = JSON.parse(localStorage.getItem('apo_local_polls') || '[]').filter(p => String(p.Poll_ID) !== String(pollId));
+      localStorage.setItem('apo_local_polls', JSON.stringify(localCreated));
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || '{}');
+      if (cached.polls) {
+        cached.polls = cached.polls.filter(p => String(p.Poll_ID) !== String(pollId));
+        localStorage.setItem('apo_cache', JSON.stringify(cached));
+      }
+      renderPolls();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "adminMod", userHash: currentUser.userHash, adminPin: "2026", modType: "deletePoll", targetId: pollId })
+        });
+      } catch (e) {}
+    }
+
+    function syncDistrict(d) {
+      currentFilter = d;
+      document.getElementById('district-select').value = d;
+      renderPolls();
+    }
+
+    function filterMyDistrict() {
+      syncDistrict(currentUser.district || "Itanagar Capital Complex");
+    }
+
+    function logout() {
+      if (confirm("Switch user or log out?")) {
+        localStorage.removeItem('apo_user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    initSidebar();
+    syncLive(false);
+  </script>
+</body>
+</html>

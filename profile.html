@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>My Profile | Arunachal Peoples Opinion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('apo_user') || 'null');
+    if (!currentUser || !currentUser.userHash) {
+      window.location.replace('login.html');
+    }
+  </script>
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-slate-800 p-0.5 border border-slate-700" onerror="this.style.display='none'" />
+      <h1 class="font-extrabold text-sm text-white">My Profile</h1>
+    </div>
+    <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-rose-400 text-xs font-bold">Logout</button>
+  </header>
+
+  <!-- Desktop Left Sidebar -->
+  <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
+    <div>
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-slate-700" onerror="this.style.display='none'" />
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
+          <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">Arunachal Pradesh</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5">
+        <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📊</span> Public Polling</a>
+        <a href="pinboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📍</span> Geo-Pinboard</a>
+        <a href="tracker.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🏛️</span> Scheme Tracker</a>
+        <a href="youth.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🎓</span> Youth Portal</a>
+        <a href="speakfree.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🔒</span> Speak Free</a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-800 bg-slate-900/60 space-y-2">
+      <a href="profile.html" class="block w-full py-2.5 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs text-center shadow">
+        👤 My Profile
+      </a>
+      <button onclick="logout()" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white font-bold text-xs transition">
+        Switch User / Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-3.5 md:p-8 overflow-y-auto">
+    <div class="max-w-4xl mx-auto space-y-6">
+
+      <div class="border-b border-slate-800 pb-3.5">
+        <h2 class="text-xl md:text-3xl font-extrabold text-white">Profile & Account Settings</h2>
+        <p class="text-xs md:text-sm text-slate-400">Your @Username and photo appear on public posts. Your full name and address stay private.</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-5 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-center gap-4 pb-4 border-b border-slate-800">
+          <img id="avatar-preview" src="" class="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-500 bg-slate-800" />
+          <div class="space-y-1.5 text-center sm:text-left">
+            <label class="inline-block cursor-pointer px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-emerald-400 border border-slate-700 transition">
+              📷 Change Photo
+              <input type="file" accept="image/*" class="hidden" onchange="compressAvatar(event)" />
+            </label>
+            <p class="text-[11px] text-slate-400 font-semibold" id="role-badge"></p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300">Public Handle (@Username)</label>
+            <input id="prof-username" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-emerald-400 font-bold focus:border-emerald-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-300">Full Name (Private)</label>
+            <input id="prof-name" type="text" placeholder="Your Name" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300">Home District</label>
+            <select id="prof-district" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+              <option>Itanagar Capital Complex</option><option>Tawang</option><option>West Kameng</option>
+              <option>Bichom</option><option>East Kameng</option><option>Pakke-Kessang</option>
+              <option>Papum Pare</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+              <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+              <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+              <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+              <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+              <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+              <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-300">Address / Colony (Private)</label>
+            <input id="prof-address" type="text" placeholder="Sector / Village / Circle" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <button id="save-btn" onclick="saveProfile()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition shadow-lg">
+          💾 Save Profile
+        </button>
+        <p id="save-msg" class="text-xs text-emerald-400 font-bold text-center hidden"></p>
+      </div>
+
+      <!-- User's Submitted Reports -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 class="text-base font-extrabold text-white">📋 My Submitted Reports & Posts</h3>
+          <span id="my-post-count" class="text-xs font-bold text-emerald-400">0 Posts</span>
+        </div>
+        <div id="my-posts-list" class="space-y-3"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Mobile Fixed 5-Tab Bottom Bar -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 grid grid-cols-5 z-50 text-[10px] font-bold">
+    <a href="index.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📊</span><span>Polls</span></a>
+    <a href="pinboard.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📍</span><span>Pinboard</span></a>
+    <a href="tracker.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🏛️</span><span>Schemes</span></a>
+    <a href="youth.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🎓</span><span>Youth</span></a>
+    <a href="speakfree.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🔒</span><span>Speak Free</span></a>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBBlj3H08CzWrEmvXF4RB_MIYtBC2JTXi-bPZXlmUcei_mOFuKXJh83io82sDAgzkxmA/exec";
+    let avatarBase64 = currentUser.avatar || "";
+
+    function loadUI() {
+      document.getElementById('role-badge').textContent = `${currentUser.role || 'Citizen'} Account`;
+      document.getElementById('prof-username').value = currentUser.username || '';
+      document.getElementById('prof-name').value = currentUser.displayName || '';
+      document.getElementById('prof-district').value = currentUser.district || 'Itanagar Capital Complex';
+      document.getElementById('prof-address').value = currentUser.address || '';
+      document.getElementById('avatar-preview').src = avatarBase64 || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(currentUser.username)}`;
+    }
+
+    function compressAvatar(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = 96;
+          canvas.height = 96;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 96, 96);
+          avatarBase64 = canvas.toDataURL('image/jpeg', 0.72);
+          document.getElementById('avatar-preview').src = avatarBase64;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveProfile() {
+      const btn = document.getElementById('save-btn');
+      const msg = document.getElementById('save-msg');
+      btn.textContent = "Saving...";
+      msg.classList.add('hidden');
+
+      let uname = document.getElementById('prof-username').value.trim();
+      if (!uname) { alert("Please enter a @Username."); btn.textContent = "💾 Save Profile"; return; }
+      if (!uname.startsWith('@')) uname = '@' + uname;
+
+      const oldUsername = currentUser.username;
+      currentUser.username = uname;
+      currentUser.displayName = document.getElementById('prof-name').value.trim();
+      currentUser.district = document.getElementById('prof-district').value;
+      currentUser.address = document.getElementById('prof-address').value.trim();
+      currentUser.avatar = avatarBase64;
+      currentUser.authorTag = String(currentUser.userHash).slice(-8);
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "updateProfile",
+            userHash: currentUser.userHash,
+            username: currentUser.username,
+            displayName: currentUser.displayName,
+            avatar: currentUser.avatar,
+            district: currentUser.district,
+            address: currentUser.address
+          })
+        });
+        const data = await res.json();
+        if (data && data.ok === false) {
+          currentUser.username = oldUsername;
+          alert(data.error || "Could not update profile.");
+          btn.textContent = "💾 Save Profile";
+          return;
+        }
+      } catch (e) {}
+
+      localStorage.setItem('apo_user', JSON.stringify(currentUser));
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (cached && cached.posts) {
+        const myTag = String(currentUser.userHash).slice(-8);
+        cached.posts.forEach(p => {
+          if (p.Author_Tag === myTag || p.Author_Username === oldUsername) {
+            p.Author_Username = currentUser.username;
+            p.Author_Avatar = currentUser.avatar;
+          }
+        });
+        localStorage.setItem('apo_cache', JSON.stringify(cached));
+      }
+
+      btn.textContent = "💾 Save Profile";
+      msg.textContent = "✓ Profile saved!";
+      msg.classList.remove('hidden');
+      loadMyActivity();
+    }
+
+    async function loadMyActivity() {
+      const box = document.getElementById('my-posts-list');
+      const countEl = document.getElementById('my-post-count');
+      const myTag = String(currentUser.userHash).slice(-8);
+
+      let posts = [];
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (cached && cached.posts) posts = cached.posts;
+
+      try {
+        const res = await fetch(API_URL + "?action=getAllData");
+        const data = await res.json();
+        if (data && data.ok) {
+          localStorage.setItem('apo_cache', JSON.stringify(data));
+          posts = data.posts || [];
+        }
+      } catch (e) {}
+
+      const mine = posts.filter(p => p.Tool_Type !== "speakfree" && (p.Author_Tag === myTag || p.Author_Username === currentUser.username)).reverse();
+      countEl.textContent = `${mine.length} Posts`;
+
+      if (mine.length === 0) {
+        box.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-xs text-slate-400">No public reports or posts submitted yet.</div>`;
+        return;
+      }
+
+      box.innerHTML = mine.map(p => {
+        const isResolved = String(p.GPS_Meta || '').includes('[RESOLVED]');
+        const typeBadge = p.Tool_Type === 'pinboard' ? '📍 Pinboard' : (p.Tool_Type === 'youth' ? '🎓 Youth' : '🏛️ Scheme Audit');
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-800 text-emerald-400">${typeBadge}</span>
+                <span class="text-[11px] font-bold text-amber-400">${p.Category}</span>
+                <span class="text-[11px] text-slate-400">• 📍 ${p.District}</span>
+                ${isResolved ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700">🟢 Resolved</span>` : ''}
+              </div>
+              <p class="text-sm text-slate-200">${p.Content.replace(/\[IMG:.*?\]/g, '')}</p>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-xs font-extrabold text-emerald-400 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">▲ ${p.Upvotes || 1}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function logout() {
+      if (confirm("Switch user or log out?")) {
+        localStorage.removeItem('apo_user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    loadUI();
+    loadMyActivity();
+  </script>
+</body>
+</html>

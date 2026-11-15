@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Youth Portal | Arunachal Peoples Opinion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('apo_user') || 'null');
+    if (!currentUser || !currentUser.userHash) {
+      window.location.replace('login.html');
+    }
+  </script>
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-slate-800 p-0.5 border border-slate-700" onerror="this.style.display='none'" />
+      <h1 class="font-extrabold text-sm text-white">Youth Portal</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="syncLive(true)" class="p-2 rounded-lg bg-slate-800 text-slate-200 text-xs">🔄</button>
+      <button onclick="openYouthModal()" class="px-2.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-extrabold">+ Post</button>
+      <a href="profile.html" class="flex items-center pl-1">
+        <img id="mob-avatar" src="" class="w-8 h-8 rounded-lg object-cover bg-slate-800 border border-emerald-500" />
+      </a>
+    </div>
+  </header>
+
+  <!-- Desktop Left Sidebar -->
+  <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
+    <div>
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-slate-700" onerror="this.style.display='none'" />
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
+          <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">Arunachal Pradesh</p>
+        </div>
+      </div>
+
+      <nav class="p-3 space-y-1.5">
+        <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📊</span> Public Polling</a>
+        <a href="pinboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>📍</span> Geo-Pinboard</a>
+        <a href="tracker.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🏛️</span> Scheme Tracker</a>
+        <a href="youth.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow"><span>🎓</span> Youth Portal</a>
+        <a href="speakfree.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition"><span>🔒</span> Speak Free</a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-800 bg-slate-900/60 space-y-3">
+      <div class="flex items-center gap-3">
+        <img id="side-avatar" src="" class="w-10 h-10 rounded-xl object-cover bg-slate-800 border border-emerald-500" />
+        <div class="overflow-hidden">
+          <p id="side-username" class="text-xs font-extrabold text-white truncate"></p>
+          <p id="side-role" class="text-[11px] text-emerald-400 font-semibold truncate"></p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <a href="profile.html" class="flex-1 py-2 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-slate-200 transition">Profile</a>
+        <button onclick="logout()" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-600 text-xs font-bold text-slate-300 hover:text-white transition">Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-3.5 md:p-8 overflow-y-auto">
+    <div class="max-w-6xl mx-auto space-y-4 md:space-y-6">
+
+      <!-- Clean Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl md:text-3xl font-extrabold text-white">Youth Skill, Startup & Job Pulse</h2>
+          <p class="text-xs md:text-sm text-slate-400">Connect across districts on startups, skills, and employment initiatives.</p>
+        </div>
+        <div class="hidden md:flex items-center gap-2.5">
+          <button onclick="syncLive(true)" id="sync-btn" class="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition">
+            🔄 Sync
+          </button>
+          <button onclick="openYouthModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs md:text-sm shadow-lg transition">
+            🎓 + Post Youth Pulse
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Filter Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <select id="feed-dist" onchange="renderYouth()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+            <option value="All Districts">🌎 All 28 Districts</option>
+            <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+            <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+            <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+            <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+            <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+            <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+            <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+            <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+            <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+          </select>
+          <select id="feed-sector" onchange="renderYouth()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+            <option value="All Sectors">All Sectors & Trades</option>
+            <option>Engineering / IT & Digital Services</option>
+            <option>Agri-Business, Livestock & Supply Chain</option>
+            <option>Eco-Tourism, Homestay & Adventure Guide</option>
+            <option>Handloom, Craft & Creative Media</option>
+            <option>APPSC / Competitive Exam & Job Policy</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-between px-1">
+          <button onclick="filterMyDistrict()" class="text-[11px] font-bold text-emerald-400 hover:underline">📍 My Home District</button>
+          <span id="youth-count" class="text-xs font-extrabold text-slate-400"></span>
+        </div>
+      </div>
+
+      <!-- Youth Feed Grid -->
+      <div id="y-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+    </div>
+  </main>
+
+  <!-- Post Youth Pulse Modal -->
+  <div id="youth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-start sm:items-center justify-center p-3 overflow-y-auto z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl my-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-extrabold text-emerald-400">Post to Youth Pulse</h3>
+        <button onclick="closeYouthModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-300">District</label>
+        <select id="y-dist" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white">
+          <option>Itanagar Capital Complex</option><option>Papum Pare</option><option>Tawang</option>
+          <option>West Kameng</option><option>Bichom</option><option>East Kameng</option>
+          <option>Pakke-Kessang</option><option>Kurung Kumey</option><option>Kra Daadi</option>
+          <option>Lower Subansiri</option><option>Keyi Panyor</option><option>Kamle</option>
+          <option>Upper Subansiri</option><option>West Siang</option><option>Lepa Rada</option>
+          <option>Shi-Yomi</option><option>East Siang</option><option>Upper Siang</option>
+          <option>Lower Siang</option><option>Siang</option><option>Lower Dibang Valley</option>
+          <option>Dibang Valley</option><option>Anjaw</option><option>Lohit</option>
+          <option>Namsai</option><option>Changlang</option><option>Tirap</option><option>Longding</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-300">Sector / Trade</label>
+        <select id="y-trade" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white">
+          <option>Engineering / IT & Digital Services</option>
+          <option>Agri-Business, Livestock & Supply Chain</option>
+          <option>Eco-Tourism, Homestay & Adventure Guide</option>
+          <option>Handloom, Craft & Creative Media</option>
+          <option>APPSC / Competitive Exam & Job Policy</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-300">Message / Proposal</label>
+        <textarea id="y-note" rows="4" placeholder="Share your skill profile, startup support need, or employment feedback..." class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white"></textarea>
+      </div>
+      <button onclick="registerYouth()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg transition">
+        Publish Post
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Fixed 5-Tab Bottom Bar -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 grid grid-cols-5 z-50 text-[10px] font-bold">
+    <a href="index.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📊</span><span>Polls</span></a>
+    <a href="pinboard.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>📍</span><span>Pinboard</span></a>
+    <a href="tracker.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🏛️</span><span>Schemes</span></a>
+    <a href="youth.html" class="flex flex-col items-center justify-center py-2.5 text-emerald-400"><span>🎓</span><span>Youth</span></a>
+    <a href="speakfree.html" class="flex flex-col items-center justify-center py-2.5 text-slate-400"><span>🔒</span><span>Speak Free</span></a>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBBlj3H08CzWrEmvXF4RB_MIYtBC2JTXi-bPZXlmUcei_mOFuKXJh83io82sDAgzkxmA/exec";
+    let youthPosts = [];
+
+    function initSidebar() {
+      const av = currentUser.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(currentUser.username)}`;
+      document.getElementById('side-username').textContent = currentUser.username;
+      document.getElementById('side-role').textContent = `${currentUser.role || 'Citizen'} • ${currentUser.district || 'AP'}`;
+      document.getElementById('side-avatar').src = av;
+      document.getElementById('mob-avatar').src = av;
+      if (currentUser.district) document.getElementById('y-dist').value = currentUser.district;
+    }
+
+    function openYouthModal() { document.getElementById('youth-modal').classList.replace('hidden', 'flex'); }
+    function closeYouthModal() { document.getElementById('youth-modal').classList.replace('flex', 'hidden'); }
+
+    function formatTimeAgo(isoStr) {
+      if (!isoStr) return "Recent";
+      const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+      if (isNaN(diff) || diff < 60) return "Just now";
+      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+      if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+      return Math.floor(diff / 86400) + "d ago";
+    }
+
+    async function syncLive(showSpinner) {
+      const btn = document.getElementById('sync-btn');
+      if (showSpinner && btn) btn.textContent = "⏳...";
+
+      const cached = JSON.parse(localStorage.getItem('apo_cache') || 'null');
+      if (cached && cached.posts && youthPosts.length === 0) {
+        youthPosts = cached.posts.filter(p => p.Tool_Type === "youth").reverse();
+        renderYouth();
+      }
+
+      try {
+        const res = await fetch(API_URL + "?action=getAllData");
+        const data = await res.json();
+        if (data && data.ok) {
+          localStorage.setItem('apo_cache', JSON.stringify(data));
+          youthPosts = (data.posts || []).filter(p => p.Tool_Type === "youth").reverse();
+          renderYouth();
+        }
+      } catch (e) {}
+
+      if (btn) btn.textContent = "🔄 Sync";
+    }
+
+    function renderYouth() {
+      const box = document.getElementById('y-list');
+      const distFilter = document.getElementById('feed-dist').value;
+      const sectorFilter = document.getElementById('feed-sector').value;
+      const upvotedMap = JSON.parse(localStorage.getItem('apo_upvoted') || '{}');
+
+      const filtered = youthPosts.filter(p => {
+        const matchDist = distFilter === "All Districts" || p.District === distFilter;
+        const matchSec = sectorFilter === "All Sectors" || p.Category === sectorFilter;
+        return matchDist && matchSec;
+      });
+
+      document.getElementById('youth-count').textContent = `${filtered.length} Posts`;
+
+      if (filtered.length === 0) {
+        box.innerHTML = `<div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-xs text-slate-400">No posts found for this filter.</div>`;
+        return;
+      }
+
+      box.innerHTML = filtered.map(p => {
+        const av = p.Author_Avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(p.Author_Username || 'AP')}`;
+        const hasUpvoted = upvotedMap[p.Post_ID];
+        const adminDel = (currentUser.role === "Admin")
+          ? `<button onclick="deleteYouth('${p.Post_ID}')" class="text-[11px] font-bold text-rose-400 hover:underline">🗑️ Delete</button>`
+          : '';
+
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 flex flex-col justify-between space-y-3 shadow-lg">
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-start gap-2">
+                <div class="flex items-center gap-2.5">
+                  <img src="${av}" class="w-10 h-10 rounded-xl object-cover bg-slate-800 border border-slate-700 shrink-0" />
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <p class="text-xs font-extrabold text-white">${p.Author_Username}</p>
+                      <span class="text-[10px] text-slate-500">${formatTimeAgo(p.Timestamp)}</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-400 font-semibold">📍 ${p.District}</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950 border border-emerald-800 px-2 py-0.5 rounded-lg text-right">${p.Category}</span>
+              </div>
+              <p class="text-sm text-slate-200 leading-relaxed">"${p.Content}"</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-800/80">
+              <div>${adminDel}</div>
+              <button onclick="upvoteYouth('${p.Post_ID}')" class="px-3 py-1.5 rounded-xl text-xs font-extrabold border transition ${hasUpvoted ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-950 hover:bg-slate-800 text-emerald-400 border-slate-700'}">
+                👍 Support (${p.Upvotes || 1})
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function registerYouth() {
+      const district = document.getElementById('y-dist').value;
+      const category = document.getElementById('y-trade').value;
+      const content = document.getElementById('y-note').value.trim();
+      if (!content) { alert("Please enter your message."); return; }
+
+      youthPosts.unshift({
+        Post_ID: "PST_" + Date.now(),
+        Tool_Type: "youth",
+        Author_Tag: String(currentUser.userHash).slice(-8),
+        Author_Username: currentUser.username,
+        Author_Avatar: currentUser.avatar,
+        District: district,
+        Category: category,
+        Content: content,
+        Upvotes: 1,
+        Timestamp: new Date().toISOString()
+      });
+
+      document.getElementById('y-note').value = '';
+      closeYouthModal();
+      renderYouth();
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "createPost",
+            toolType: "youth",
+            userHash: currentUser.userHash,
+            username: currentUser.username,
+            avatar: currentUser.avatar,
+            district, category, content,
+            gpsMeta: "Verified Youth"
+          })
+        });
+      } catch (e) {}
+    }
+
+    async function upvoteYouth(postId) {
+      const upvotedMap = JSON.parse(localStorage.getItem('apo_upvoted') || '{}');
+      if (upvotedMap[postId]) return;
+      upvotedMap[postId] = true;
+      localStorage.setItem('apo_upvoted', JSON.stringify(upvotedMap));
+
+      const target = youthPosts.find(p => String(p.Post_ID) === String(postId));
+      if (target) {
+        target.Upvotes = Number(target.Upvotes || 1) + 1;
+        renderYouth();
+      }
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "upvotePost", postId })
+        });
+      } catch (e) {}
+    }
+
+    async function deleteYouth(postId) {
+      if (!confirm("Delete this post?")) return;
+      youthPosts = youthPosts.filter(p => String(p.Post_ID) !== String(postId));
+      renderYouth();
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "adminMod", userHash: currentUser.userHash, modType: "deletePost", targetId: postId })
+        });
+      } catch (e) {}
+    }
+
+    function filterMyDistrict() {
+      document.getElementById('feed-dist').value = currentUser.district || "Itanagar Capital Complex";
+      renderYouth();
+    }
+
+    function logout() {
+      if (confirm("Switch user or log out?")) {
+        localStorage.removeItem('apo_user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    initSidebar();
+    syncLive(false);
+  </script>
+</body>
+</html>
