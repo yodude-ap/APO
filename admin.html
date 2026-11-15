@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AP Opinion" />
   <title>Admin Command Center | Arunachal Peoples Opinion</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
@@ -41,7 +47,7 @@
   <aside class="hidden md:flex md:w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between shrink-0 h-screen sticky top-0">
     <div>
       <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-amber-500/70" onerror="this.style.display='none'" />
+        <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-amber-500/70" onerror="this.src='assets/icon-192.png'" />
         <div>
           <h1 class="font-extrabold text-sm tracking-tight text-white leading-tight">Arunachal Peoples Opinion</h1>
           <p class="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider">⚡ Admin Command</p>
@@ -82,7 +88,7 @@
 
         <button onclick="selectAdminView('users')" id="nav-users" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
           <span class="flex items-center gap-3"><span>👥</span> Citizens Directory</span>
-          <span id="badge-users" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">0</span>
+          <span id="badge-users" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-bold">0</span>
         </button>
       </nav>
     </div>
@@ -160,7 +166,7 @@
         <div onclick="selectAdminView('users')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
           <p class="text-[11px] font-bold text-slate-400 uppercase">Registered Citizens</p>
           <p id="kpi-users" class="text-2xl md:text-3xl font-extrabold text-white">0</p>
-          <p id="kpi-users-sub" class="text-[11px] text-emerald-400 font-semibold">Verified Accounts</p>
+          <p id="kpi-users-sub" class="text-[11px] text-emerald-400 font-semibold">Active Across State</p>
         </div>
 
         <div onclick="selectAdminView('polls')" class="cursor-pointer bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-2xl p-4 space-y-1 shadow transition">
@@ -265,7 +271,7 @@
             <button onclick="switchQueueTab('schemes')" id="qtab-schemes" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🏛️ Schemes</button>
             <button onclick="switchQueueTab('youth')" id="qtab-youth" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🎓 Youth</button>
             <button onclick="switchQueueTab('speakfree')" id="qtab-speakfree" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">🔒 Speak Free</button>
-            <button onclick="switchQueueTab('users')" id="qtab-users" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">👥 Users Directory</button>
+            <button onclick="switchQueueTab('users')" id="qtab-users" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold text-xs">👥 Citizens Directory</button>
           </div>
         </div>
 
@@ -386,6 +392,7 @@
     ];
 
     let rawData = { users: [], polls: [], votes: [], schemes: [], schemeAudits: [], posts: [] };
+    let derivedUsersList = [];
     let activeAdminView = "overview";
     let activeQueueTab = "polls";
     let editingPollId = null;
@@ -398,7 +405,90 @@
       document.getElementById('side-avatar').src = av;
     }
 
-    // Switches Left Sidebar Views WITHOUT leaving admin.html
+    // Automatically builds full Citizens list from Users + Votes + Posts + Polls + Audits
+    function buildUnifiedCitizens() {
+      const map = new Map();
+
+      function upsert(hashKey, info) {
+        if (!hashKey) return;
+        const key = String(hashKey).trim();
+        if (!key) return;
+        const existing = map.get(key) || {
+          User_Hash: key,
+          Username: "",
+          Display_Name: "Verified Citizen",
+          District: "Itanagar Capital Complex",
+          Role: "Citizen",
+          votesCount: 0,
+          postsCount: 0
+        };
+        if (info.Username && (!existing.Username || existing.Username.startsWith('@Voter_'))) existing.Username = info.Username;
+        if (info.Display_Name && existing.Display_Name === "Verified Citizen") existing.Display_Name = info.Display_Name;
+        if (info.District && info.District !== "All Districts") existing.District = info.District;
+        if (info.Role === "Admin") existing.Role = "Admin";
+        if (info.addVote) existing.votesCount += 1;
+        if (info.addPost) existing.postsCount += 1;
+        map.set(key, existing);
+      }
+
+      // 1. From explicit Users sheet (if returned)
+      (rawData.users || []).forEach(u => {
+        upsert(u.User_Hash || u.Username, {
+          Username: u.Username,
+          Display_Name: u.Display_Name || "Verified Citizen",
+          District: u.District,
+          Role: u.Role
+        });
+      });
+
+      // 2. From Poll Votes (captures every unique voter!)
+      (rawData.votes || []).forEach(v => {
+        const h = String(v.User_Hash || '').trim();
+        if (h) {
+          const shortId = h.slice(-4).toUpperCase();
+          upsert(h, {
+            Username: `@Voter_${shortId}`,
+            District: v.District || "Itanagar Capital Complex",
+            addVote: true
+          });
+        }
+      });
+
+      // 3. From Pinboard, Youth & SpeakFree Posts
+      (rawData.posts || []).forEach(p => {
+        const h = String(p.User_Hash || p.Author_Hash || p.Author_Username || ('post_' + p.Post_ID)).trim();
+        upsert(h, {
+          Username: p.Author_Username || `@Citizen_${h.slice(-4)}`,
+          District: p.District || "Itanagar Capital Complex",
+          addPost: true
+        });
+      });
+
+      // 4. From Scheme Audits
+      (rawData.schemeAudits || []).forEach(a => {
+        const h = String(a.User_Hash || '').trim();
+        if (h) {
+          upsert(h, {
+            Username: `@Auditor_${h.slice(-4).toUpperCase()}`,
+            District: a.District || "Itanagar Capital Complex"
+          });
+        }
+      });
+
+      // 5. Current logged-in Admin
+      if (currentUser && currentUser.userHash) {
+        upsert(currentUser.userHash, {
+          Username: currentUser.username,
+          Display_Name: currentUser.displayName || "State Administrator",
+          District: currentUser.district || "Itanagar Capital Complex",
+          Role: "Admin"
+        });
+      }
+
+      derivedUsersList = Array.from(map.values());
+      return derivedUsersList;
+    }
+
     function selectAdminView(viewName) {
       activeAdminView = viewName;
       const allNavs = ['overview', 'polls', 'pinboard', 'schemes', 'youth', 'speakfree', 'users'];
@@ -432,7 +522,7 @@
         schemes: ["🏛️ Welfare Scheme Tracker — Admin Control", "Publish state welfare schemes, monitor citizen Delay/Unaware flags, and manage listings.", "🏛️ Active Welfare Schemes"],
         youth: ["🎓 Youth Skill, Startup & Job Pulse — Moderation", "Review youth proposals, employment feedback, and startup support requests across districts.", "🎓 Youth Portal Posts"],
         speakfree: ["🔒 Speak Free — Whistleblower & Policy Reports", "Review anonymous citizen reports and political opinions across all 28 districts.", "🔒 Anonymous Speak Free Reports"],
-        users: ["👥 Registered Citizens Directory", "View verified citizen and administrator accounts across Arunachal Pradesh.", "👥 Verified Platform Accounts"]
+        users: ["👥 Registered & Active Citizens Directory", "Every unique citizen and voter detected across polls, ground reports, and district portals.", "👥 Verified Platform Citizens & Voters"]
       };
 
       if (titles[viewName]) {
@@ -494,7 +584,8 @@
       const dist = document.getElementById('admin-dist-filter').value;
       const inDist = (d) => dist === "All Districts" || d === dist || d === "All Districts";
 
-      const users = rawData.users.filter(u => dist === "All Districts" || u.District === dist);
+      const allCombinedUsers = buildUnifiedCitizens();
+      const users = allCombinedUsers.filter(u => dist === "All Districts" || u.District === dist);
       const polls = rawData.polls.filter(p => inDist(p.Target_District));
       const votes = rawData.votes.filter(v => dist === "All Districts" || v.District === dist);
       const schemes = rawData.schemes.filter(s => dist === "All Districts" || String(s.Target_Districts).includes("All Districts") || String(s.Target_Districts).includes(dist));
@@ -514,11 +605,11 @@
       document.getElementById('badge-schemes').textContent = schemes.length;
       document.getElementById('badge-youth').textContent = youthPosts.length;
       document.getElementById('badge-speakfree').textContent = anonPosts.length;
-      document.getElementById('badge-users').textContent = users.length || 1;
+      document.getElementById('badge-users').textContent = users.length;
 
       // 1. Update KPIs
-      document.getElementById('kpi-users').textContent = users.length || 1;
-      document.getElementById('kpi-users-sub').textContent = dist === "All Districts" ? "Across 28 Districts" : `In ${dist}`;
+      document.getElementById('kpi-users').textContent = users.length;
+      document.getElementById('kpi-users-sub').textContent = dist === "All Districts" ? "Unique Voters & Citizens" : `Active in ${dist}`;
       document.getElementById('kpi-polls').textContent = polls.length;
       document.getElementById('kpi-votes-sub').textContent = `${votes.length} Total Votes Cast`;
       document.getElementById('kpi-pins-open').textContent = openPins.length;
@@ -724,18 +815,21 @@
       }
 
       if (activeQueueTab === 'users') {
-        const users = rawData.users.filter(u => dist === "All Districts" || u.District === dist).slice().reverse();
-        if (users.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No registered users in this filter.</p>`; return; }
+        const users = derivedUsersList.filter(u => dist === "All Districts" || u.District === dist);
+        if (users.length === 0) { box.innerHTML = `<p class="text-xs text-slate-500 p-4 text-center">No active citizens in this district filter yet.</p>`; return; }
         box.innerHTML = users.map(u => `
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">👤</div>
+              <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">👤</div>
               <div>
-                <p class="text-xs font-extrabold text-white">${u.Username || '@AP_Citizen'} <span class="text-slate-400 font-normal">(${u.Display_Name || 'Citizen'})</span></p>
+                <p class="text-xs font-extrabold text-white">${u.Username || '@AP_Citizen'} <span class="text-slate-400 font-normal">(${u.Display_Name || 'Verified Citizen'})</span></p>
                 <p class="text-[11px] text-emerald-400">📍 ${u.District || 'Itanagar Capital Complex'} • Encrypted ID: <span class="font-mono text-slate-500">${String(u.User_Hash || '').slice(0, 12)}...</span></p>
               </div>
             </div>
-            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${u.Role === 'Admin' ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${u.Role || 'Citizen'}</span>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300">🗳️ ${u.votesCount || 0} Votes • 📝 ${u.postsCount || 0} Posts</span>
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold ${u.Role === 'Admin' ? 'bg-amber-500 text-slate-950' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'}">${u.Role || 'Citizen'}</span>
+            </div>
           </div>
         `).join('');
       }

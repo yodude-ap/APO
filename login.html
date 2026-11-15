@@ -5,14 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#020617" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AP Opinion" />
   <title>Login | Arunachal Peoples Opinion</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.jpg" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
 
   <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-7 shadow-2xl space-y-6">
     <div class="flex flex-col items-center text-center space-y-2">
-      <img src="assets/logo.png" alt="Logo" class="w-16 h-16 rounded-2xl object-contain bg-slate-800 p-1.5 border border-slate-700" onerror="this.style.display='none'" />
+      <img src="assets/logo.png" alt="Logo" class="w-16 h-16 rounded-2xl object-contain bg-slate-800 p-1.5 border border-slate-700" onerror="this.src='assets/icon-192.png'" />
       <h1 class="text-2xl font-extrabold text-white">Arunachal Peoples Opinion</h1>
       <p class="text-xs text-slate-400 leading-relaxed">
         Sign in with your mobile number. Your phone number stays private and is never shared publicly.
